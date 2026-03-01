@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS personal_info (
     email               VARCHAR(150)    NOT NULL    COMMENT 'البريد الإلكتروني',
     address             TEXT            NOT NULL    COMMENT 'العنوان',
     school_entry_date   DATE            NOT NULL    COMMENT 'تاريخ الدخول المدرسي الأولي',
+    diploma             VARCHAR(150)    NOT NULL    COMMENT 'الشهادة / الدبلوم المحصل عليه',
     created_at          DATETIME        NOT NULL    DEFAULT CURRENT_TIMESTAMP COMMENT 'تاريخ الإنشاء',
     updated_at          DATETIME        NULL        ON UPDATE CURRENT_TIMESTAMP COMMENT 'تاريخ التحديث',
     

@@ -172,6 +172,11 @@ function validateData($data) {
         $errors['school_entry_date'] = 'تاريخ الدخول المدرسي غير صالح';
     }
 
+    // الشهادة / الدبلوم
+    if (empty($data['diploma']) || mb_strlen(trim($data['diploma'])) < 2) {
+        $errors['diploma'] = 'الشهادة / الدبلوم مطلوب (2 أحرف على الأقل)';
+    }
+
     return $errors;
 }
 
@@ -202,7 +207,8 @@ function sanitizeData($data) {
         'phone'             => preg_replace('/[^\+0-9\-\s]/', '', trim($data['phone'])),
         'email'             => filter_var(trim($data['email']), FILTER_SANITIZE_EMAIL),
         'address'           => htmlspecialchars(trim($data['address']), ENT_QUOTES, 'UTF-8'),
-        'school_entry_date' => $data['school_entry_date']
+        'school_entry_date' => $data['school_entry_date'],
+        'diploma'           => htmlspecialchars(trim($data['diploma']), ENT_QUOTES, 'UTF-8')
     ];
 }
 
@@ -226,9 +232,9 @@ function saveToDatabase($data) {
     $pdo = getConnection();
 
     $sql = "INSERT INTO personal_info 
-            (district, school_year, school_name, years_worked, first_name, family_name, maiden_name, birth_date, birth_place, residence, marital_status, spouse_name, gender, phone, email, address, school_entry_date, created_at) 
+            (district, school_year, school_name, years_worked, first_name, family_name, maiden_name, birth_date, birth_place, residence, marital_status, spouse_name, gender, phone, email, address, school_entry_date, diploma, created_at) 
             VALUES 
-            (:district, :school_year, :school_name, :years_worked, :first_name, :family_name, :maiden_name, :birth_date, :birth_place, :residence, :marital_status, :spouse_name, :gender, :phone, :email, :address, :school_entry_date, NOW());";
+            (:district, :school_year, :school_name, :years_worked, :first_name, :family_name, :maiden_name, :birth_date, :birth_place, :residence, :marital_status, :spouse_name, :gender, :phone, :email, :address, :school_entry_date, :diploma, NOW());";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
@@ -248,7 +254,8 @@ function saveToDatabase($data) {
         ':phone'             => $data['phone'],
         ':email'             => $data['email'],
         ':address'           => $data['address'],
-        ':school_entry_date' => $data['school_entry_date']
+        ':school_entry_date' => $data['school_entry_date'],
+        ':diploma'           => $data['diploma']
     ]);
 
     return $pdo->lastInsertId();

@@ -197,6 +197,7 @@ input[type="text"],
 input[type="email"],
 input[type="tel"],
 input[type="date"],
+select,
 textarea {
     width: 100%;
     padding: 12px 16px;
@@ -214,6 +215,7 @@ input[type="text"]:hover,
 input[type="email"]:hover,
 input[type="tel"]:hover,
 input[type="date"]:hover,
+select:hover,
 textarea:hover {
     border-color: var(--primary-light);
 }
@@ -222,6 +224,7 @@ input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="tel"]:focus,
 input[type="date"]:focus,
+select:focus,
 textarea:focus {
     border-color: var(--border-focus);
     background: #ffffff;
@@ -238,6 +241,8 @@ input[readonly] {
 .ltr-input {
     text-align: left;
     direction: ltr;
+    min-height: 60px;
+    text-align: center;
 }
 
 textarea {
@@ -253,17 +258,20 @@ textarea::placeholder {
 
 /* Validation states */
 .form-group.error input,
+.form-group.error select,
 .form-group.error textarea {
     border-color: var(--error-color);
     background: #fef5f5;
 }
 
 .form-group.error input:focus,
+.form-group.error select:focus,
 .form-group.error textarea:focus {
     box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
 }
 
 .form-group.valid input,
+.form-group.valid select,
 .form-group.valid textarea {
     border-color: var(--success-color);
 }
@@ -412,6 +420,44 @@ textarea::placeholder {
     border-color: var(--text-light);
 }
 
+.btn-pdf {
+    flex: 1;
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-pdf-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-pdf-loader {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-pdf:hover {
+    background: linear-gradient(135deg, #a93226, #c0392b);
+    box-shadow: 0 4px 16px rgba(192, 57, 43, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-pdf:active {
+    transform: translateY(0);
+}
+
+.btn-pdf:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
 /* ========================================
    Spinner
    ======================================== */
@@ -502,6 +548,7 @@ textarea::placeholder {
     }
 
     .btn-submit,
+    .btn-pdf,
     .btn-reset {
         flex: none;
         width: 100%;
