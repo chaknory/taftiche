@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استمارة المعلومات الشخصية</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <div class="logo-placeholder">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="22" stroke="#1a3a5c" stroke-width="2"/>
+                    <path d="M24 12v24M12 24h24" stroke="#1a3a5c" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="institution-header">
+                <p class="institution-top">مديرية التربية لولاية بسكرة</p>
+                <p class="institution-sub">مفتشية التعليم الإبتدائي</p>
+            </div>
+            <h1>البطاقة الشخصية لأستاذ اللغة العربية </h1>
+            <p class="subtitle">يرجى ملء جميع الحقول المطلوبة بدقة</p>
+        </div>
+
+        
+            <!-- المقاطعة والسنة الدراسية -->
+            <div class="form-row">
+                <div class="form-group form-group-grow">
+                    <label for="district">
+                        <span class="label-text">المقاطعة المدرسية</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="district"
+                        name="district"
+                        value="11"
+                        required
+                        minlength="1"
+                        maxlength="50"
+                        readonly
+                    >
+                    <span class="error-message" id="districtError"></span>
+                </div>
+                <div class="form-group form-group-grow">
+                    <label for="schoolYear">
+                        <span class="label-text">السنة الدراسية</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="schoolYear"
+                        name="school_year"
+                        value="2025 / 2026"
+                        required
+                        minlength="4"
+                        maxlength="20"
+                        readonly
+                    >
+                    <span class="error-message" id="schoolYearError"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group form-group-grow">
+                    <label for="schoolName">
+                        <span class="label-text">اسم المدرسة</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="schoolName" 
+                        name="school_name" 
+                        placeholder="أدخل اسم المدرسة"
+                        required
+                        minlength="5"
+                        maxlength="100"
+                    >
+                    <span class="error-message" id="schoolNameError"></span>
+                </div>
+                <div class="form-group form-group-fixed">
+                    <label for="yearsWorked">
+                        <span class="label-text">عدد سنوات العمل فيها</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="number" 
+                        id="yearsWorked" 
+                        name="years_worked" 
+                        placeholder="0"
+                        required
+                        min="0"
+                        max="60"
+                        step="1"
+                        class="ltr-input"
+                    >
+                    <span class="error-message" id="yearsWorkedError"></span>
+                </div>
+            </div>
+            
+            <!-- مكان الإقامة -->
+            <div class="form-group">
+                <label for="residence">
+                    <span class="label-text">مكان الإقامة </span>
+                    <span class="required">*</span>
+                </label>
+                <input
+                    type="text"
+                    id="residence"
+                    name="residence"
+                    placeholder="أدخل مكان الإقامة"
+                    required
+                    minlength="2"
+                    maxlength="100"
+                >
+                <span class="error-message" id="residenceError"></span>
+            </div>
+
+            <!-- الجنس -->
+            <div class="form-group">
+                <label>
+                    <span class="label-text">الجنس</span>
+                    <span class="required">*</span>
+                </label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="gender" value="ذكر" required>
+                        <span class="radio-custom"></span>
+                        <span>ذكر</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="gender" value="أنثى">
+                        <span class="radio-custom"></span>
+                        <span>أنثى</span>
+                    </label>
+                </div>
+                <span class="error-message" id="genderError"></span>
+            </div>
+
+            <div class="form-row form-row-thirds">
+                <div class="form-group">
+                    <label for="firstName">
+                        <span class="label-text">الاسم الشخصي</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="firstName" 
+                        name="first_name" 
+                        placeholder="الاسم الشخصي"
+                        required
+                        minlength="2"
+                        maxlength="50"
+                    >
+                    <span class="error-message" id="firstNameError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="familyName">
+                        <span class="label-text">الاسم العائلي</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="familyName" 
+                        name="family_name" 
+                        placeholder="الاسم العائلي"
+                        required
+                        minlength="2"
+                        maxlength="50"
+                    >
+                    <span class="error-message" id="familyNameError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="maidenName">
+                        <span class="label-text">اللقب الأصلي للمتزوجة</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="maidenName" 
+                        name="maiden_name" 
+                        placeholder="اختياري"
+                        maxlength="50"
+                    >
+                    <span class="error-message" id="maidenNameError"></span>
+                </div>
+            </div>
+
+            <!-- تاريخ ومكان الميلاد -->
+            <div class="form-row">
+                <div class="form-group form-group-grow">
+                    <label for="birthDate">
+                        <span class="label-text">تاريخ الميلاد</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="date" 
+                        id="birthDate" 
+                        name="birth_date" 
+                        required
+                    >
+                    <span class="error-message" id="birthDateError"></span>
+                </div>
+                <div class="form-group form-group-grow">
+                    <label for="birthPlace">
+                        <span class="label-text">مكان الميلاد</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="birthPlace" 
+                        name="birth_place" 
+                        placeholder="المدينة / البلدية"
+                        required
+                        minlength="2"
+                        maxlength="100"
+                    >
+                    <span class="error-message" id="birthPlaceError"></span>
+                </div>
+            </div>
+            
+            <!-- الحالة المدنية -->
+            <div class="form-group" id="civil" style="display:none;">
+                <label>
+                    <span class="label-text">الحالة المدنية</span>
+                    <span class="required">*</span>
+                </label>
+                <div class="radio-group radio-group-wrap">
+                    <label class="radio-label">
+                        <input type="radio" name="marital_status" value="أعزب" required>
+                        <span class="radio-custom"></span>
+                        <span class="marital-label">أعزب</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="marital_status" value="متزوج">
+                        <span class="radio-custom"></span>
+                        <span class="marital-label">متزوج</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="marital_status" value="أرمل">
+                        <span class="radio-custom"></span>
+                        <span class="marital-label">أرمل</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="marital_status" value="مطلق">
+                        <span class="radio-custom"></span>
+                        <span class="marital-label">مطلق</span>
+                    </label>
+                </div>
+                <span class="error-message" id="maritalStatusError"></span>
+            </div>
+
+            <!-- عدد الأطفال (يظهر إذا كانت الحالة المدنية غير أعزب) -->
+            <div class="form-group" id="childrenCountGroup" style="display:none;">
+                <label for="childrenCount">
+                    <span class="label-text">عدد الأطفال</span>
+                </label>
+                <input
+                    type="number"
+                    id="childrenCount"
+                    name="children_count"
+                    placeholder="0"
+                    min="0"
+                    max="30"
+                    step="1"
+                    class="ltr-input"
+                >
+                <span class="error-message" id="childrenCountError"></span>
+            </div>
+
+            <!-- اسم الزوج (يظهر فقط إذا أنثى + متزوجة) -->
+            <div class="form-group" id="spouseNameGroup" style="display:none;">
+                <label for="spouseName">
+                    <span class="label-text">إسم و لقب الزوج</span>
+                    <span class="required">*</span>
+                </label>
+                <input
+                    type="text"
+                    id="spouseName"
+                    name="spouse_name"
+                    placeholder="أدخلي إسم و لقب الزوج"
+                    minlength="3"
+                    maxlength="100"
+                >
+                <span class="error-message" id="spouseNameError"></span>
+            </div>
+
+
+            <!-- رقم الهاتف -->
+            <div class="form-group">
+                <label for="phone">
+                    <span class="label-text">رقم الهاتف</span>
+                    <span class="required">*</span>
+                </label>
+                <input 
+                    type="tel" 
+                    id="phone" 
+                    name="phone" 
+                    placeholder="أدخل رقم هاتفك"
+                    required
+                    pattern="^0[56][0-9]{8}$"
+                    dir="ltr"
+                    class="ltr-input"
+                >
+                <span class="error-message" id="phoneError"></span>
+            </div>
+
+            <!-- البريد الإلكتروني -->
+            <div class="form-group">
+                <label for="email">
+                    <span class="label-text">البريد الإلكتروني</span>
+                    <span class="required">*</span>
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder="example@email.com"
+                    required
+                    dir="ltr"
+                    class="ltr-input"
+                >
+                <span class="error-message" id="emailError"></span>
+            </div>
+
+            <!-- العنوان -->
+            <div class="form-group">
+                <label for="address">
+                    <span class="label-text">العنوان</span>
+                    <span class="required">*</span>
+                </label>
+                <textarea 
+                    id="address" 
+                    name="address" 
+                    placeholder="أدخل عنوانك الكامل"
+                    required
+                    rows="3"
+                    minlength="5"
+                    maxlength="300"
+                ></textarea>
+                <span class="error-message" id="addressError"></span>
+            </div>
+
+            <!-- تاريخ الدخول المدرسي الأولي -->
+            <div class="form-group">
+                <label for="schoolEntryDate">
+                    <span class="label-text">تاريخ الدخول المدرسي الأولي</span>
+                    <span class="required">*</span>
+                </label>
+                <input 
+                    type="date" 
+                    id="schoolEntryDate" 
+                    name="school_entry_date" 
+                    required
+                >
+                <span class="error-message" id="schoolEntryDateError"></span>
+            </div>
+
+            <!-- أزرار -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-submit" id="submitBtn">
+                    <span class="btn-text">إرسال</span>
+                    <span class="btn-loader" style="display:none;">
+                        <span class="spinner"></span>
+                        جاري الإرسال...
+                    </span>
+                </button>
+                <button type="reset" class="btn btn-reset">مسح الحقول</button>
+            </div>
+        </form>
+
+        <!-- رسالة النجاح -->
+        <div class="success-message" id="successMessage" style="display:none;">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="32" r="30" stroke="#27ae60" stroke-width="3"/>
+                <path d="M20 32l8 8 16-16" stroke="#27ae60" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2>تم الإرسال بنجاح!</h2>
+            <p>شكراً لك، تم حفظ معلوماتك الشخصية بنجاح.</p>
+            <button class="btn btn-submit" onclick="resetForm()">إرسال استمارة جديدة</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy;  سماح علمي -  جميع الحقوق محفوظة -  2026  </p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
