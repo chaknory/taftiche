@@ -555,6 +555,126 @@ textarea::placeholder {
     }
 }
 
+/* ========================================
+   Timetable
+   ======================================== */
+.timetable-section {
+    margin-top: 28px;
+    border: 2px solid var(--primary-color);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.timetable-header {
+    background: var(--primary-color);
+    color: #fff;
+    padding: 10px 16px;
+    text-align: center;
+}
+
+.timetable-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.timetable-meta {
+    font-size: 0.82rem;
+    opacity: 0.88;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.timetable-meta-sep {
+    opacity: 0.5;
+}
+
+.timetable-wrapper {
+    overflow-x: auto;
+}
+
+.timetable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 520px;
+    font-size: 0.9rem;
+}
+
+.timetable thead tr {
+    background: #eaf0f7;
+}
+
+.timetable th,
+.timetable td {
+    border: 1px solid var(--border-color);
+    text-align: center;
+    padding: 6px 4px;
+    vertical-align: middle;
+}
+
+.timetable th {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.th-day {
+    min-width: 74px;
+    background: var(--primary-color);
+    color: #fff !important;
+}
+
+.td-day {
+    font-weight: 700;
+    background: #f4f7fb;
+    color: var(--primary-color);
+    white-space: nowrap;
+}
+
+.th-break,
+.td-break {
+    background: #f0f2f5;
+    width: 40px;
+    min-width: 40px;
+    color: var(--text-light);
+    font-size: 0.78rem;
+}
+
+.th-period {
+    background: #d6e4f0;
+    color: var(--primary-color);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.timetable tbody tr:hover {
+    background: #f7fafd;
+}
+
+.tt-input {
+    width: 100%;
+    min-width: 80px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-family: var(--font-family);
+    font-size: 0.88rem;
+    color: var(--text-color);
+    padding: 2px 4px;
+    outline: none;
+    direction: rtl;
+}
+
+.tt-input:focus {
+    background: #eaf4ff;
+    border-radius: 4px;
+}
+
 @media (max-width: 400px) {
     .form-container {
         padding: 20px 16px;
@@ -568,4 +688,41 @@ textarea::placeholder {
         padding: 10px 12px;
         font-size: 0.95rem;
     }
+}
+
+/* ========================================
+   Radio Group
+   ======================================== */
+.radio-group {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: #fafbfc;
+    min-height: 48px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.radio-label input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+    margin: 0;
+}
+
+.radio-label:hover {
+    color: var(--primary-color);
 }
