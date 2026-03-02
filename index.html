@@ -324,98 +324,6 @@
                 <span class="error-message" id="emailError"></span>
             </div>
 
-            <!-- العنوان -->
-            <div class="form-group">
-                <label for="address">
-                    <span class="label-text">العنوان</span>
-                    <span class="required">*</span>
-                </label>
-                <textarea 
-                    id="address" 
-                    name="address" 
-                    placeholder="أدخل عنوانك الكامل"
-                    required
-                    rows="3"
-                    minlength="5"
-                    maxlength="300"
-                ></textarea>
-                <span class="error-message" id="addressError"></span>
-            </div>
-
-            <!-- تاريخ الدخول المدرسي الأولي -->
-            <div class="form-group">
-                <label for="schoolEntryDate">
-                    <span class="label-text">تاريخ الدخول المدرسي الأولي</span>
-                    <span class="required">*</span>
-                </label>
-                <input 
-                    type="date" 
-                    id="schoolEntryDate" 
-                    name="school_entry_date" 
-                    required
-                >
-                <span class="error-message" id="schoolEntryDateError"></span>
-            </div>
-
-            <!-- الشهادة / الدبلوم المحصل عليه -->
-            <div class="form-group">
-                <label for="diploma">
-                    <span class="label-text">الشهادة / الدبلوم المحصل عليه</span>
-                    <span class="required">*</span>
-                </label>
-                <input
-                    type="text"
-                    id="diploma"
-                    name="diploma"
-                    placeholder="مثال: ليسانس، ماستر، بكالوريا..."
-                    required
-                    minlength="2"
-                    maxlength="150"
-                >
-                <span class="error-message" id="diplomaError"></span>
-            </div>
-
-            <!-- تاريخ التعيين، الرتبة، الصفة -->
-            <div class="form-row form-row-thirds">
-                <div class="form-group">
-                    <label for="firstAppointmentDate">
-                        <span class="label-text">تاريخ أول تعيين بالتعليم</span>
-                        <span class="required">*</span>
-                    </label>
-                    <input
-                        type="date"
-                        id="firstAppointmentDate"
-                        name="first_appointment_date"
-                        required
-                    >
-                    <span class="error-message" id="firstAppointmentDateError"></span>
-                </div>
-                <div class="form-group">
-                    <label for="rank">
-                        <span class="label-text">الرتبة</span>
-                    </label>
-                    <input
-                        type="text"
-                        id="rank"
-                        name="rank"
-                        placeholder="أدخل الرتبة"
-                    >
-                    <span class="error-message" id="rankError"></span>
-                </div>
-                <div class="form-group">
-                    <label for="status">
-                        <span class="label-text">الصفة</span>
-                    </label>
-                    <input
-                        type="text"
-                        id="status"
-                        name="status"
-                        placeholder="أدخل الصفة"
-                    >
-                    <span class="error-message" id="statusError"></span>
-                </div>
-            </div>
-
             <!-- سنة التخرج -->
             <div class="form-row">
                 <div class="form-group form-group-grow">
@@ -438,6 +346,72 @@
                 </div>
             </div>
 
+
+            <!-- الشهادة / الدبلوم المحصل عليه -->
+            <div class="form-group">
+                <label for="diploma">
+                    <span class="label-text">الشهادة / الدبلوم المحصل عليه</span>
+                    <span class="required">*</span>
+                </label>
+                <input
+                    type="text"
+                    id="diploma"
+                    name="diploma"
+                    placeholder="مثال: ليسانس، ماستر، بكالوريا..."
+                    required
+                    minlength="2"
+                    maxlength="150"
+                >
+                <span class="error-message" id="diplomaError"></span>
+            </div>
+
+            <!-- تاريخ التعيين، الرتبة، الصفة -->
+            <div class="form-row">
+                <div class="form-group form-group-grow">
+                    <label for="firstAppointmentDate">
+                        <span class="label-text">تاريخ أول تعيين بالتعليم</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input
+                        type="date"
+                        id="firstAppointmentDate"
+                        name="first_appointment_date"
+                        required
+                    >
+                    <span class="error-message" id="firstAppointmentDateError"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group form-group-grow">
+                    <label for="rank">
+                        <span class="label-text">الرتبة</span>
+                    </label>
+                    <select id="rank" name="rank">
+                        <option value="">-- اختر الرتبة --</option>
+                        <option value="أستاذ تعليم إبتدائي قسم أول">أستاذ تعليم إبتدائي قسم أول</option>
+                        <option value="أستاذ تعليم إبتدائي قسم ثاني">أستاذ تعليم إبتدائي قسم ثاني</option>
+                        <option value="أستاذ تعليم إبتدائي مميز">أستاذ تعليم إبتدائي مميز</option>
+                        <option value="أستاذ تعليم إبتدائي متربص">أستاذ تعليم إبتدائي متربص</option>
+                        <option value="أستاذ تعليم إبتدائي متعاقد">أستاذ تعليم إبتدائي متعاقد</option>
+                    </select>
+                    <span class="error-message" id="rankError"></span>
+                </div>
+                <div class="form-group form-group-grow">
+                    <label for="status">
+                        <span class="label-text">الصفة</span>
+                    </label>
+                    <select id="status" name="status">
+                        <option value="">-- اختر الصفة --</option>
+                        <option value="متربص(ة)">متربص(ة)</option>
+                        <option value="مرسم(ة)">مرسم(ة)</option>
+                        <option value="متعاقد(ة)">متعاقد(ة)</option>
+                    </select>
+                    <span class="error-message" id="statusError"></span>
+                </div>
+            </div>
+
+
               <!-- السلم والدرجة وتاريخ التنفيذ -->
             <div class="form-row form-row-thirds">
                 <div class="form-group">
@@ -457,13 +431,21 @@
                     <label for="grade">
                         <span class="label-text">الدرجة</span>
                     </label>
-                    <input
-                        type="text"
-                        id="grade"
-                        name="grade"
-                        placeholder="أدخل الدرجة"
-                        maxlength="50"
-                    >
+                    <select id="grade" name="grade">
+                        <option value="">-- اختر الدرجة --</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
                     <span class="error-message" id="gradeError"></span>
                 </div>
                 <div class="form-group">
