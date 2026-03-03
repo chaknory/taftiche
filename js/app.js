@@ -16,7 +16,7 @@ const CONFIG = {
         address: 'يرجى إدخال العنوان (5 أحرف على الأقل)',
         district: 'يرجى إدخال المقاطعة المدرسية',
         schoolYear: 'يرجى إدخال السنة الدراسية',
-        schoolName: 'يرجى إدخال اسم المدرسة (5 أحرف على الأقل)',
+        schoolName: 'يرجى اختيار اسم المدرسة',
         yearsWorked: 'يرجى إدخال عدد سنوات العمل (بين 0 و 60)',
         firstName: 'يرجى إدخال الاسم الشخصي (2 أحرف على الأقل)',
         familyName: 'يرجى إدخال الاسم العائلي (2 أحرف على الأقل)',
@@ -56,7 +56,7 @@ const validators = {
     },
 
     schoolName(value) {
-        return value.trim().length >= 5;
+        return value.trim().length > 0;
     },
 
     yearsWorked(value) {
@@ -493,11 +493,14 @@ form.addEventListener('submit', async function(e) {
             body: JSON.stringify(formData)
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
+        const result = await response.json().catch(() => null);
 
-        const result = await response.json();
+        if (!response.ok) {
+            // Afficher le message métier renvoyé par le serveur (ex. email en double)
+            const msg = result?.message || CONFIG.MESSAGES.serverError;
+            showError(msg);
+            return;
+        }
 
         if (result.success) {
             showSuccess();

@@ -69,10 +69,19 @@ try {
     // 3. Sanitize data
     $sanitized = sanitizeData($data);
 
-    // 4. Save to database
+    // 4. Check email uniqueness
+    if (isEmailTaken($sanitized['email'])) {
+        sendResponse(false,
+            'يبدو أن هذا البريد الإلكتروني مسجّل مسبقًا. هل سبق لك تعبئة الاستمارة؟ إذا كان هذا خطأ، تواصل مع المسؤول.',
+            422,
+            ['errors' => ['email' => 'البريد الإلكتروني مستخدم بالفعل']]
+        );
+    }
+
+    // 5. Save to database
     $id = saveToDatabase($sanitized);
 
-    // 5. Success response
+    // 6. Success response
     sendResponse(true, 'تم حفظ المعلومات بنجاح', 201, ['id' => $id]);
 
 } catch (PDOException $e) {
@@ -218,6 +227,13 @@ function sanitizeData($data) {
 // ==========================================
 // Database Operations
 // ==========================================
+
+function isEmailTaken($email) {
+    $pdo = getConnection();
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM personal_info WHERE email = :email");
+    $stmt->execute([':email' => $email]);
+    return (int)$stmt->fetchColumn() > 0;
+}
 
 function getConnection() {
     $dbPath   = DB_PATH;

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول – مديرية التربية بسكرة</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="form-container auth-card">
+
+        <!-- En-tête identique à index.html -->
+        <div class="form-header">
+            <div class="logo-placeholder">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="22" stroke="#1a3a5c" stroke-width="2"/>
+                    <path d="M24 12v24M12 24h24" stroke="#1a3a5c" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="institution-header">
+                <p class="institution-top">مديرية التربية لولاية بسكرة</p>
+                <p class="institution-sub">مفتشية التعليم الإبتدائي</p>
+            </div>
+            <h1 id="formTitle">تسجيل الدخول</h1>
+            <p class="subtitle" id="formSubtitle">الرجاء إدخال بيانات الدخول للمتابعة</p>
+        </div>
+
+        <!-- Onglets -->
+        <div class="auth-tabs" role="tablist">
+            <button type="button" class="auth-tab active" id="tabLogin"
+                    role="tab" aria-selected="true" aria-controls="panelLogin">
+                تسجيل الدخول
+            </button>
+            <button type="button" class="auth-tab" id="tabRegister"
+                    role="tab" aria-selected="false" aria-controls="panelRegister">
+                إنشاء حساب
+            </button>
+        </div>
+
+        <!-- Alerte partagée -->
+        <div class="auth-alert" id="authAlert" style="display:none" role="alert"></div>
+
+        <!-- Panneau : Connexion -->
+        <div id="panelLogin" role="tabpanel">
+        <form id="loginForm" novalidate autocomplete="on">
+
+            <!-- Nom d'utilisateur / email -->
+            <div class="form-group" id="grpUsername">
+                <label for="username">
+                    <span class="label-text">اسم المستخدم أو البريد الإلكتروني</span>
+                    <span class="required">*</span>
+                </label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    required
+                    autocomplete="username"
+                    placeholder="أدخل اسم المستخدم أو البريد الإلكتروني"
+                >
+                <span class="error-message" id="usernameError"></span>
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="form-group" id="grpPassword">
+                <label for="password">
+                    <span class="label-text">كلمة المرور</span>
+                    <span class="required">*</span>
+                </label>
+                <div class="password-wrapper">
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                        autocomplete="current-password"
+                        placeholder="أدخل كلمة المرور"
+                    >
+                    <button type="button" class="password-toggle" id="togglePassword"
+                            aria-label="إظهار / إخفاء كلمة المرور">
+                        <!-- Œil ouvert -->
+                        <svg id="eyeOpen" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <!-- Œil barré -->
+                        <svg id="eyeClosed" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                             style="display:none">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8
+                                     a18.45 18.45 0 0 1 5.06-5.94"/>
+                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8
+                                     a18.5 18.5 0 0 1-2.16 3.19"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                    </button>
+                </div>
+                <span class="error-message" id="passwordError"></span>
+            </div>
+
+            <!-- Options -->
+            <div class="auth-options">
+                <label class="remember-label">
+                    <input type="checkbox" id="rememberMe" name="remember_me">
+                    <span class="remember-custom"></span>
+                    <span>تذكرني لمدة 30 يومًا</span>
+                </label>
+            </div>
+
+            <!-- Bouton -->
+            <div class="form-actions" style="margin-top: 24px;">
+                <button type="submit" class="btn btn-submit" id="loginBtn">
+                    <span class="btn-text">دخول</span>
+                    <span class="spinner btn-spinner" style="display:none"></span>
+                </button>
+            </div>
+
+        </form>
+        </div><!-- /panelLogin -->
+
+        <!-- Panneau : Inscription -->
+        <div id="panelRegister" role="tabpanel" style="display:none">
+        <form id="registerForm" novalidate autocomplete="off">
+
+            <div class="form-row">
+                <!-- Prénom -->
+                <div class="form-group" id="grpFirstName">
+                    <label for="regFirstName">
+                        <span class="label-text">الاسم الشخصي</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" id="regFirstName" name="first_name" required
+                           autocomplete="given-name" placeholder="مثال: محمد">
+                    <span class="error-message" id="firstNameError"></span>
+                </div>
+
+                <!-- Nom de famille -->
+                <div class="form-group" id="grpLastName">
+                    <label for="regLastName">
+                        <span class="label-text">اللقب</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" id="regLastName" name="last_name" required
+                           autocomplete="family-name" placeholder="مثال: بن سالم">
+                    <span class="error-message" id="lastNameError"></span>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group" id="grpRegEmail">
+                <label for="regEmail">
+                    <span class="label-text">البريد الإلكتروني</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="email" id="regEmail" name="email" required
+                       autocomplete="email" placeholder="example@education.dz">
+                <span class="error-message" id="regEmailError"></span>
+            </div>
+
+            <!-- Nom d'utilisateur -->
+            <div class="form-group" id="grpRegUsername">
+                <label for="regUsername">
+                    <span class="label-text">اسم المستخدم</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="text" id="regUsername" name="username" required
+                       autocomplete="username" placeholder="أحرف لاتينية وأرقام فقط (3-30)">
+                <span class="error-message" id="regUsernameError"></span>
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="form-group" id="grpRegPassword">
+                <label for="regPassword">
+                    <span class="label-text">كلمة المرور</span>
+                    <span class="required">*</span>
+                </label>
+                <div class="password-wrapper">
+                    <input type="password" id="regPassword" name="password" required
+                           autocomplete="new-password" placeholder="8 أحرف على الأقل، حرف كبير ورقم">
+                    <button type="button" class="password-toggle" id="toggleRegPassword"
+                            aria-label="إظهار / إخفاء كلمة المرور">
+                        <svg id="regEyeOpen" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg id="regEyeClosed" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                             style="display:none">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8
+                                     a18.45 18.45 0 0 1 5.06-5.94"/>
+                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8
+                                     a18.5 18.5 0 0 1-2.16 3.19"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                    </button>
+                </div>
+                <span class="error-message" id="regPasswordError"></span>
+            </div>
+
+            <!-- Confirmation mot de passe -->
+            <div class="form-group" id="grpRegConfirm">
+                <label for="regConfirm">
+                    <span class="label-text">تأكيد كلمة المرور</span>
+                    <span class="required">*</span>
+                </label>
+                <div class="password-wrapper">
+                    <input type="password" id="regConfirm" name="confirm" required
+                           autocomplete="new-password" placeholder="أعد إدخال كلمة المرور">
+                </div>
+                <span class="error-message" id="regConfirmError"></span>
+            </div>
+
+            <div class="form-actions" style="margin-top: 24px;">
+                <button type="submit" class="btn btn-submit" id="registerBtn">
+                    <span class="btn-text">إنشاء الحساب</span>
+                    <span class="spinner btn-spinner" style="display:none"></span>
+                </button>
+            </div>
+
+        </form>
+        </div><!-- /panelRegister -->
+
+    </div>
+
+    <footer class="footer">
+        <p>© 2026 – مديرية التربية لولاية بسكرة</p>
+    </footer>
+
+    <script src="js/login.js"></script>
+</body>
+</html>

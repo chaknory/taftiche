@@ -70,15 +70,16 @@
                         <span class="label-text">اسم المدرسة</span>
                         <span class="required">*</span>
                     </label>
-                    <input 
-                        type="text" 
-                        id="schoolName" 
-                        name="school_name" 
-                        placeholder="أدخل اسم المدرسة"
+                    <select
+                        id="schoolName"
+                        name="school_name"
                         required
-                        minlength="5"
-                        maxlength="100"
                     >
+                        <option value="">-- اختر اسم المدرسة --</option>
+                        <option value="مدرسة نورالدين زنكي">مدرسة نورالدين زنكي</option>
+                        <option value="مدرسة أبوبكر الصديق">مدرسة أبوبكر الصديق</option>
+                        <option value="مدرسة عمرالفاروق">مدرسة عمرالفاروق</option>
+                    </select>
                     <span class="error-message" id="schoolNameError"></span>
                 </div>
                 <div class="form-group form-group-fixed">
@@ -736,6 +737,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
