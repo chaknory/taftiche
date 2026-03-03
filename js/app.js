@@ -270,7 +270,7 @@ function validateField(fieldName) {
  * Validate entire form
  */
 function validateForm() {
-    const fields = ['district', 'schoolYear', 'schoolName', 'yearsWorked', 'firstName', 'familyName', 'maidenName', 'birthDate', 'birthPlace', 'residence', 'gender', 'maritalStatus', 'childrenCount', 'spouseName', 'phone', 'email', 'address', 'schoolEntryDate', 'diploma', 'firstAppointmentDate', 'rank', 'status', 'techInstituteGradYear', 'universityGradYear', 'lastInspectionDate', 'lastInspectionScore', 'echelon', 'grade', 'executionDate', 'latestInspectionDate', 'latestInspectionScore', 'previousYearClass', 'currentYearClass'];
+    const fields = ['district', 'schoolYear', 'schoolName', 'yearsWorked', 'firstName', 'familyName', 'maidenName', 'birthDate', 'birthPlace', 'residence', 'gender', 'maritalStatus', 'childrenCount', 'spouseName', 'phone', 'email', 'address', 'diploma', 'firstAppointmentDate', 'rank', 'status', 'techInstituteGradYear', 'universityGradYear', 'lastInspectionDate', 'lastInspectionScore', 'echelon', 'grade', 'executionDate', 'latestInspectionDate', 'latestInspectionScore', 'previousYearClass', 'currentYearClass'];
     let isFormValid = true;
 
     fields.forEach(field => {
@@ -462,7 +462,7 @@ form.addEventListener('submit', async function(e) {
         phone: document.getElementById('phone').value.trim(),
         email: document.getElementById('email').value.trim(),
         address: document.getElementById('address').value.trim(),
-        school_entry_date: document.getElementById('schoolEntryDate').value,
+        school_entry_date: document.getElementById('firstAppointmentDate').value,
         diploma: document.getElementById('diploma').value.trim(),
         tech_institute_grad_year: document.getElementById('techInstituteGradYear').value || null,
         university_grad_year: document.getElementById('universityGradYear').value || null,
@@ -897,6 +897,96 @@ async function generatePDF() {
         pdfLoader.style.display = 'none';
     }
 }
+
+// ==========================================
+// Initialisation depuis amri.json
+// ==========================================
+
+/**
+ * Charge amri.json et pré-remplit le formulaire au lancement.
+ */
+async function fillFormFromJSON() {
+    let data;
+    try {
+        const res = await fetch('amri.json');
+        if (!res.ok) return;
+        data = await res.json();
+    } catch (e) {
+        console.warn('Impossible de charger amri.json :', e);
+        return;
+    }
+
+    // Utilitaires
+    const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (el && value !== null && value !== undefined) el.value = value;
+    };
+    const setRadio = (name, value) => {
+        if (value === null || value === undefined) return;
+        const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+        if (radio) radio.checked = true;
+    };
+    const setSelect = (id, value) => {
+        if (value === null || value === undefined) return;
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        // cherche l'option correspondante
+        const str = String(value);
+        for (const opt of sel.options) {
+            if (opt.value === str) { sel.value = str; return; }
+        }
+    };
+
+    // Champs texte / nombre / date
+    set('yearsWorked',           data['عدد سنوات العمل فعليا']);
+    set('familyName',            data['الاسم العائلي (بالعربية)']);
+    set('firstName',             data['الاسم الشخصي']);
+    set('residence',             data['مكان الإقامة']);
+    set('birthDate',             data['تاريخ الازدياد']);
+    set('birthPlace',            data['مكان الازدياد']);
+    set('phone',                 data['رقم الهاتف']);
+    set('email',                 data['البريد الإلكتروني']);
+    set('diploma',               data['التخصص / العلوم المحصل عليها']);
+    set('firstAppointmentDate',  data['تاريخ أول تعيين بالمؤسسة']);
+    set('echelon',               data['السلم']);
+    set('executionDate',         data['تاريخ الترسيم/التثبيت']);
+    set('latestInspectionScore', data['رصيد آخر تفويض - العتبة']);
+    set('latestInspectionDate',  data['رصيد آخر تفويض - التاريخ']);
+    set('lastInspectionScore',   data['رصيد الانتقال من قبل الآخر - العتبة']);
+    set('lastInspectionDate',    data['رصيد الانتقال من قبل الآخر - التاريخ']);
+
+    // Selects
+    setSelect('grade',               data['الدرجة']);
+    setSelect('universityGradYear',  data['سنة الخروج من الجامعة']);
+    setSelect('previousYearClass',   data['القسم المسند العام الماضي']);
+    setSelect('currentYearClass',    data['القسم المسند هذا الموسم']);
+
+    // "الصفة" : la valeur JSON peut avoir des parenthèses en trop → "(متعاقد(ة))" → "متعاقد(ة)"
+    const rawStatus = data['الصفة'];
+    if (rawStatus) {
+        const cleanStatus = rawStatus.replace(/^\((.+)\)$/, '$1');
+        setSelect('status', cleanStatus);
+    }
+
+    // Radio : جنس (gender) — doit être défini en premier pour activer la section الحالة المدنية
+    const genre = data['الجنس'];
+    if (genre) {
+        setRadio('gender', genre);
+        updateMaritalLabels(genre);
+        document.getElementById('civil').style.display = 'block';
+    }
+
+    // Radio : الحالة المدنية
+    const marital = data['الحالة المدنية'];
+    if (marital) {
+        setRadio('marital_status', marital);
+        updateChildrenCountVisibility();
+        updateSpouseNameVisibility();
+    }
+}
+
+// Lancer au chargement de la page
+fillFormFromJSON();
 
 /**
  * Reset form to initial state (called from success screen)

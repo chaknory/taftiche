@@ -1,41 +1,42 @@
 -- =============================================
 -- Script de création de la base de données
 -- استمارة المعلومات الشخصية
+-- Compatible SQLite 3
 -- =============================================
-
-CREATE DATABASE IF NOT EXISTS personal_info_db
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
-
-USE personal_info_db;
 
 -- Table des informations personnelles
 CREATE TABLE IF NOT EXISTS personal_info (
-    id                  INT AUTO_INCREMENT PRIMARY KEY,
-    district            VARCHAR(50)     NOT NULL    COMMENT 'المقاطعة المدرسية',
-    school_year         VARCHAR(20)     NOT NULL    COMMENT 'السنة الدراسية',
-    school_name         VARCHAR(100)    NOT NULL    COMMENT 'اسم المدرسة',
-    years_worked        TINYINT UNSIGNED NOT NULL   COMMENT 'عدد سنوات العمل فيها',
-    first_name          VARCHAR(50)     NOT NULL    COMMENT 'الاسم الشخصي',
-    family_name         VARCHAR(50)     NOT NULL    COMMENT 'الاسم العائلي',
-    maiden_name         VARCHAR(50)     NULL        COMMENT 'اللقب الأصلي للمتزوجة (اختياري)',
-    birth_place         VARCHAR(100)    NOT NULL    COMMENT 'مكان الميلاد',
-    marital_status      ENUM('أعزب','متزوج','أرمل','مطلق') NOT NULL COMMENT 'الحالة المدنية',
-    spouse_name         VARCHAR(100)    NULL        COMMENT 'اسم الزوج (للمتزوجة فقط)',
-    birth_date          DATE            NOT NULL    COMMENT 'تاريخ الميلاد',
-    gender              ENUM('ذكر', 'أنثى') NOT NULL COMMENT 'الجنس',
-    phone               VARCHAR(20)     NOT NULL    COMMENT 'رقم الهاتف',
-    email               VARCHAR(150)    NOT NULL    COMMENT 'البريد الإلكتروني',
-    address             TEXT            NOT NULL    COMMENT 'العنوان',
-    school_entry_date   DATE            NOT NULL    COMMENT 'تاريخ الدخول المدرسي الأولي',
-    diploma             VARCHAR(150)    NOT NULL    COMMENT 'الشهادة / الدبلوم المحصل عليه',
-    created_at          DATETIME        NOT NULL    DEFAULT CURRENT_TIMESTAMP COMMENT 'تاريخ الإنشاء',
-    updated_at          DATETIME        NULL        ON UPDATE CURRENT_TIMESTAMP COMMENT 'تاريخ التحديث',
-    
-    INDEX idx_email (email),
-    INDEX idx_phone (phone),
-    INDEX idx_created (created_at)
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4
-  COLLATE=utf8mb4_unicode_ci
-  COMMENT='جدول المعلومات الشخصية';
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    district            TEXT    NOT NULL,                                        -- المقاطعة المدرسية
+    school_year         TEXT    NOT NULL,                                        -- السنة الدراسية
+    school_name         TEXT    NOT NULL,                                        -- اسم المدرسة
+    years_worked        INTEGER NOT NULL CHECK(years_worked >= 0 AND years_worked <= 60), -- عدد سنوات العمل
+    first_name          TEXT    NOT NULL,                                        -- الاسم الشخصي
+    family_name         TEXT    NOT NULL,                                        -- الاسم العائلي
+    maiden_name         TEXT,                                                    -- اللقب الأصلي للمتزوجة (اختياري)
+    birth_place         TEXT    NOT NULL,                                        -- مكان الميلاد
+    residence           TEXT    NOT NULL,                                        -- مكان الإقامة
+    marital_status      TEXT    NOT NULL CHECK(marital_status IN ('أعزب','متزوج','أرمل','مطلق')), -- الحالة المدنية
+    spouse_name         TEXT,                                                    -- اسم الزوج (للمتزوجة فقط)
+    birth_date          TEXT    NOT NULL,                                        -- تاريخ الميلاد (YYYY-MM-DD)
+    gender              TEXT    NOT NULL CHECK(gender IN ('ذكر','أنثى')),        -- الجنس
+    phone               TEXT    NOT NULL,                                        -- رقم الهاتف
+    email               TEXT    NOT NULL,                                        -- البريد الإلكتروني
+    address             TEXT    NOT NULL,                                        -- العنوان
+    school_entry_date   TEXT    NOT NULL,                                        -- تاريخ الدخول المدرسي (YYYY-MM-DD)
+    diploma             TEXT    NOT NULL,                                        -- الشهادة / الدبلوم
+    created_at          TEXT    NOT NULL DEFAULT (datetime('now')),              -- تاريخ الإنشاء
+    updated_at          TEXT                                                     -- تاريخ التحديث
+);
+
+CREATE INDEX IF NOT EXISTS idx_email   ON personal_info(email);
+CREATE INDEX IF NOT EXISTS idx_phone   ON personal_info(phone);
+CREATE INDEX IF NOT EXISTS idx_created ON personal_info(created_at);
+
+-- Trigger pour mettre à jour updated_at automatiquement
+CREATE TRIGGER IF NOT EXISTS trg_personal_info_updated_at
+AFTER UPDATE ON personal_info
+FOR EACH ROW
+BEGIN
+    UPDATE personal_info SET updated_at = datetime('now') WHERE id = OLD.id;
+END;

@@ -24,7 +24,8 @@
             <p class="subtitle">يرجى ملء جميع الحقول المطلوبة بدقة</p>
         </div>
 
-        
+        <form id="personalInfoForm" novalidate>
+
             <!-- المقاطعة والسنة الدراسية -->
             <div class="form-row">
                 <div class="form-group form-group-grow">
@@ -346,6 +347,24 @@
                 </div>
             </div>
 
+
+            <!-- العنوان -->
+            <div class="form-group">
+                <label for="address">
+                    <span class="label-text">العنوان</span>
+                    <span class="required">*</span>
+                </label>
+                <input
+                    type="text"
+                    id="address"
+                    name="address"
+                    placeholder="أدخل العنوان الكامل"
+                    required
+                    minlength="5"
+                    maxlength="200"
+                >
+                <span class="error-message" id="addressError"></span>
+            </div>
 
             <!-- الشهادة / الدبلوم المحصل عليه -->
             <div class="form-group">

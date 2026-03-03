@@ -3,11 +3,14 @@
  * API Backend - Réception des informations personnelles
  * =====================================================
  * Ce fichier reçoit les données du formulaire en JSON
- * et les enregistre dans une base de données MySQL.
+ * et les enregistre dans une base de données SQLite.
  * 
  * Configuration requise:
  * - PHP 7.4+
- * - Extension PDO MySQL
+ * - Extension PDO SQLite (pdo_sqlite)
+ *
+ * La base de données SQLite est créée et initialisée
+ * automatiquement au premier appel si elle n'existe pas.
  */
 
 // ==========================================
@@ -36,11 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Database Configuration
 // ==========================================
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'personal_info_db');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_CHARSET', 'utf8mb4');
+// Chemin vers le fichier SQLite (un niveau au-dessus du dossier api/)
+define('DB_PATH', __DIR__ . '/../database/personal_info.sqlite');
+
+// Chemin vers le schéma SQL pour l'initialisation automatique
+define('DB_SCHEMA', __DIR__ . '/../database/schema.sql');
 
 // ==========================================
 // Main Logic
@@ -217,15 +220,26 @@ function sanitizeData($data) {
 // ==========================================
 
 function getConnection() {
-    $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', DB_HOST, DB_NAME, DB_CHARSET);
-    
-    $options = [
+    $dbPath   = DB_PATH;
+    $isNew    = !file_exists($dbPath);
+
+    $pdo = new PDO('sqlite:' . $dbPath, null, null, [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ];
+    ]);
 
-    return new PDO($dsn, DB_USER, DB_PASS, $options);
+    // Optimisations SQLite recommandées
+    $pdo->exec('PRAGMA journal_mode = WAL;');
+    $pdo->exec('PRAGMA foreign_keys = ON;');
+    $pdo->exec('PRAGMA synchronous   = NORMAL;');
+
+    // Initialisation automatique du schéma si la base est nouvelle
+    if ($isNew) {
+        $schema = file_get_contents(DB_SCHEMA);
+        $pdo->exec($schema);
+    }
+
+    return $pdo;
 }
 
 function saveToDatabase($data) {
@@ -234,7 +248,7 @@ function saveToDatabase($data) {
     $sql = "INSERT INTO personal_info 
             (district, school_year, school_name, years_worked, first_name, family_name, maiden_name, birth_date, birth_place, residence, marital_status, spouse_name, gender, phone, email, address, school_entry_date, diploma, created_at) 
             VALUES 
-            (:district, :school_year, :school_name, :years_worked, :first_name, :family_name, :maiden_name, :birth_date, :birth_place, :residence, :marital_status, :spouse_name, :gender, :phone, :email, :address, :school_entry_date, :diploma, NOW());";
+            (:district, :school_year, :school_name, :years_worked, :first_name, :family_name, :maiden_name, :birth_date, :birth_place, :residence, :marital_status, :spouse_name, :gender, :phone, :email, :address, :school_entry_date, :diploma, datetime('now'));";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([

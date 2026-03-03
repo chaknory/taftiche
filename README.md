@@ -43,3 +43,7 @@ project/
 ## Utilisation
 
 Remplir tous les champs du formulaire puis soumettre. Les données sont enregistrées dans la base de données via `api/submit.php`.
+
+
+
+Lancer le serveur PHP intégré depuis la racine du projet : php -S localhost:8000

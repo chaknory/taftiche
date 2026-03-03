@@ -1,0 +1,4 @@
+# SQLite database file (generated at runtime)
+database/*.sqlite
+database/*.sqlite-wal
+database/*.sqlite-shm
