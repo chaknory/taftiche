@@ -155,6 +155,25 @@
         regEyeClosed.style.display = isPwd ? ''        : 'none';
     });
 
+    // ── Restriction mot de passe : Latin + chiffres + caractères spéciaux ASCII ──
+    // Regex : caractères imprimables ASCII uniquement (0x21–0x7E), sans espace
+    const ALLOWED_PWD = /^[\x21-\x7E]+$/;
+
+    function stripNonAllowed(input) {
+        const pos = input.selectionStart;
+        const before = input.value;
+        const after = before.replace(/[^\x21-\x7E]/g, '');
+        if (before !== after) {
+            input.value = after;
+            // Restaurer la position du curseur
+            const diff = before.length - after.length;
+            input.setSelectionRange(Math.max(0, pos - diff), Math.max(0, pos - diff));
+        }
+    }
+
+    regPassword.addEventListener('input', () => stripNonAllowed(regPassword));
+    regConfirm.addEventListener('input',  () => stripNonAllowed(regConfirm));
+
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         clearRegErrors();
@@ -172,6 +191,14 @@
         if (!email)               { setError('grpRegEmail',   'regEmailError',  'يرجى إدخال البريد الإلكتروني');          valid = false; }
         if (!username)            { setError('grpRegUsername','regUsernameError','يرجى إدخال اسم المستخدم');              valid = false; }
         if (!password)            { setError('grpRegPassword','regPasswordError','يرجى إدخال كلمة المرور');               valid = false; }
+        if (password && !ALLOWED_PWD.test(password)) {
+            setError('grpRegPassword', 'regPasswordError', 'كلمة المرور: أحرف لاتينية وأرقام ورموز فقط (بدون مسافة أو أحرف عربية)');
+            valid = false;
+        }
+        if (password && ALLOWED_PWD.test(password) && confirm && !ALLOWED_PWD.test(confirm)) {
+            setError('grpRegConfirm', 'regConfirmError', 'التأكيد: أحرف لاتينية وأرقام ورموز فقط (بدون مسافة أو أحرف عربية)');
+            valid = false;
+        }
         if (password && password !== confirm) {
             setError('grpRegConfirm', 'regConfirmError', 'كلمتا المرور غير متطابقتين');
             valid = false;

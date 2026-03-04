@@ -70,8 +70,10 @@ try {
         $errors['username'] = 'اسم المستخدم يجب أن يكون بين 3 و 30 حرفًا (أحرف لاتينية وأرقام و _ و . فقط)';
     }
 
-    // Politique de mot de passe : 8+ chars, 1 majuscule, 1 chiffre
-    if (!preg_match('/^(?=.*[A-Z])(?=.*\d).{8,}$/', $password)) {
+    // Politique de mot de passe : caractères ASCII imprimables uniquement (Latin + chiffres + spéciaux)
+    if (!preg_match('/^[\x21-\x7E]+$/', $password)) {
+        $errors['password'] = 'كلمة المرور تقبل فقط الأحرف اللاتينية والأرقام والرموز الخاصة (بدون مسافة أو أحرف عربية)';
+    } elseif (!preg_match('/^(?=.*[A-Z])(?=.*\d).{8,}$/', $password)) {
         $errors['password'] = 'كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل، حرف كبير ورقم واحد';
     }
 

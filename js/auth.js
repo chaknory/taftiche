@@ -76,34 +76,64 @@ const Auth = (() => {
 
             const d = json.data;
 
-            // Helper : remplit un champ si la valeur existe
+            // ── Debug : affichage de toutes les données personal_info ──────
+            console.log('[prefill] données personal_info :', d);
+
+            // Remplit un <input> ou <textarea>
             const set = (id, val) => {
                 if (val === null || val === undefined || val === '') return;
                 const el = document.getElementById(id);
                 if (el) el.value = val;
             };
 
-            // ── Champs texte / date / select ───────────────────────────────
-            set('district',             d.district);
-            set('schoolYear',           d.school_year);
-            set('schoolName',           d.school_name);
-            set('yearsWorked',          d.years_worked);
-            set('firstName',            d.first_name);
-            set('familyName',           d.family_name);
-            set('maidenName',           d.maiden_name);
-            set('birthDate',            d.birth_date);
-            set('birthPlace',           d.birth_place);
-            set('residence',            d.residence);
-            set('phone',                d.phone);
-            set('email',                d.email);
-            set('address',              d.address);
-            // school_entry_date est enregistré sous ce nom, mais affiché dans #firstAppointmentDate
-            set('firstAppointmentDate', d.school_entry_date);
-            set('diploma',              d.diploma);
+            // Sélectionne la bonne <option> dans un <select>
+            const setSelect = (id, val) => {
+                if (val === null || val === undefined || val === '') return;
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                const str = String(val);
+                for (const opt of sel.options) {
+                    if (opt.value === str) { sel.value = str; break; }
+                }
+            };
 
-            // ── Radio : genre ──────────────────────────────────────────────
-            // On déclenche l'événement change pour activer la section
-            // الحالة المدنية et mettre à jour les libellés (logique dans app.js)
+            // ── 1. Champs texte / date / nombre (colonnes de personal_info) ─
+            set('district',        d.district);
+            set('schoolYear',      d.school_year);
+            set('yearsWorked',     d.years_worked);
+            set('firstName',       d.first_name);
+            set('familyName',      d.family_name);
+            set('maidenName',      d.maiden_name);
+            set('birthDate',       d.birth_date);
+            set('birthPlace',      d.birth_place);
+            set('residence',       d.residence);
+            set('phone',           d.phone);
+            set('email',           d.email);
+            set('address',         d.address);
+            set('schoolEntryDate',        d.school_entry_date);
+            set('diploma',                d.diploma);
+            set('firstAppointmentDate',   d.first_appointment_date);
+            set('echelon',                d.echelon);
+            set('executionDate',          d.execution_date);
+            set('latestInspectionDate',   d.latest_inspection_date);
+            set('latestInspectionScore',  d.latest_inspection_score);
+            set('lastInspectionDate',     d.last_inspection_date);
+            set('lastInspectionScore',    d.last_inspection_score);
+            set('studentCount',           d.student_count);
+
+            // ── 2. Select ─────────────────────────────────────────────────
+            setSelect('schoolName',            d.school_name);
+            setSelect('rank',                  d.rank);
+            setSelect('status',                d.status);
+            setSelect('grade',                 d.grade);
+            setSelect('previousYearClass',     d.previous_year_class);
+            setSelect('currentYearClass',      d.current_year_class);
+            setSelect('techInstituteGradYear', d.tech_institute_grad_year);
+            setSelect('universityGradYear',    d.university_grad_year);
+
+            // ── 3. Radio : جنس ─────────────────────────────────────────────
+            // dispatchEvent déclenche le handler app.js :
+            //   → updateMaritalLabels() + affichage du bloc #civil
             if (d.gender) {
                 const genderRadio = document.querySelector(
                     `input[name="gender"][value="${d.gender}"]`
@@ -114,9 +144,9 @@ const Auth = (() => {
                 }
             }
 
-            // ── Radio : situation matrimoniale ─────────────────────────────
-            // On attend un tick pour que la section civil soit visible et que
-            // les libellés aient été mis à jour par le handler gender ci-dessus.
+            // ── 4. Radio : الحالة المدنية ──────────────────────────────────
+            // On attend 50 ms pour que le bloc #civil soit rendu visible
+            // et que les libellés aient été mis à jour.
             if (d.marital_status) {
                 await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -125,14 +155,27 @@ const Auth = (() => {
                 );
                 if (maritalRadio) {
                     maritalRadio.checked = true;
+                    // déclenche updateChildrenCountVisibility + updateSpouseNameVisibility
                     maritalRadio.dispatchEvent(new Event('change', { bubbles: true }));
                 }
+            }
 
-                // Champ اسم الزوج (visible seulement si أنثى + متزوج)
-                if (d.spouse_name) {
-                    set('spouseName', d.spouse_name);
+            // ── 5. Radio : معني بالحركة ───────────────────────────────────
+            if (d.haraka) {
+                const harakaRadio = document.querySelector(
+                    `input[name="haraka"][value="${d.haraka}"]`
+                );
+                if (harakaRadio) {
+                    harakaRadio.checked = true;
+                    harakaRadio.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             }
+
+            // ── 6. Champs conditionnels ────────────────────────────────────
+            // À remplir APRÈS les dispatchEvent de visibilité, car les handlers
+            // effacent ces inputs quand ils masquent leur groupe.
+            set('childrenCount', d.children_count);
+            set('spouseName',    d.spouse_name);
 
         } catch (err) {
             console.warn('Prefill failed:', err);

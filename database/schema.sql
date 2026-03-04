@@ -25,6 +25,23 @@ CREATE TABLE IF NOT EXISTS personal_info (
     address             TEXT    NOT NULL,                                        -- العنوان
     school_entry_date   TEXT    NOT NULL,                                        -- تاريخ الدخول المدرسي (YYYY-MM-DD)
     diploma             TEXT    NOT NULL,                                        -- الشهادة / الدبلوم
+    first_appointment_date TEXT,                                                 -- تاريخ أول تعيين بالتعليم
+    rank                TEXT,                                                    -- الرتبة
+    status              TEXT,                                                    -- الصفة
+    echelon             TEXT,                                                    -- السلم
+    grade               TEXT,                                                    -- الدرجة
+    execution_date      TEXT,                                                    -- تاريخ التنفيذ
+    latest_inspection_date  TEXT,                                                -- تاريخ آخر تفتيش
+    latest_inspection_score INTEGER CHECK(latest_inspection_score IS NULL OR (latest_inspection_score >= 0 AND latest_inspection_score <= 20)), -- علامة آخر تفتيش
+    last_inspection_date    TEXT,                                                -- تاريخ التفتيش ما قبل الأخير
+    last_inspection_score   INTEGER CHECK(last_inspection_score IS NULL OR (last_inspection_score >= 0 AND last_inspection_score <= 20)), -- علامة التفتيش ما قبل الأخير
+    previous_year_class TEXT,                                                    -- القسم المُسند العام الماضي
+    current_year_class  TEXT,                                                    -- القسم المُسند هذا العام
+    student_count       INTEGER CHECK(student_count IS NULL OR (student_count >= 0 AND student_count <= 200)), -- عدد التلاميذ
+    haraka              TEXT    CHECK(haraka IS NULL OR haraka IN ('نعم','لا')), -- معني بالحركة
+    children_count      INTEGER CHECK(children_count IS NULL OR (children_count >= 0 AND children_count <= 30)), -- عدد الأطفال
+    tech_institute_grad_year TEXT,                                               -- سنة التخرج من المعهد التكنولوجي
+    university_grad_year TEXT,                                                   -- سنة التخرج من الجامعة
     created_at          TEXT    NOT NULL DEFAULT (datetime('now')),              -- تاريخ الإنشاء
     updated_at          TEXT                                                     -- تاريخ التحديث
 );

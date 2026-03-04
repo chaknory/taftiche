@@ -46,18 +46,45 @@ define('DB_PATH', __DIR__ . '/../database/personal_info.sqlite');
 define('DB_SCHEMA', __DIR__ . '/../database/schema.sql');
 
 // ==========================================
+// Session — identify connected user
+// ==========================================
+
+require_once __DIR__ . '/auth/db.php';
+
+session_name('TAFTICHE_SESSION');
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path'     => '/',
+    'secure'   => false,
+    'httponly' => true,
+    'samesite' => 'Strict',
+]);
+session_start();
+
+if (empty($_SESSION['user'])) {
+    sendResponse(false, 'غير مسجل الدخول', 401);
+    exit;
+}
+
+$sessionEmail = $_SESSION['user']['email'];
+
+// ==========================================
 // Main Logic
 // ==========================================
 
 try {
     // 1. Read and parse JSON input
     $rawInput = file_get_contents('php://input');
+    error_log('[submit.php] RAW: ' . $rawInput);
     $data = json_decode($rawInput, true);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
         sendResponse(false, 'بيانات JSON غير صالحة', 400);
         exit;
     }
+
+    // Force the email to the session user (prevents spoofing)
+    $data['email'] = $sessionEmail;
 
     // 2. Validate required fields
     $errors = validateData($data);
@@ -69,20 +96,14 @@ try {
     // 3. Sanitize data
     $sanitized = sanitizeData($data);
 
-    // 4. Check email uniqueness
-    if (isEmailTaken($sanitized['email'])) {
-        sendResponse(false,
-            'يبدو أن هذا البريد الإلكتروني مسجّل مسبقًا. هل سبق لك تعبئة الاستمارة؟ إذا كان هذا خطأ، تواصل مع المسؤول.',
-            422,
-            ['errors' => ['email' => 'البريد الإلكتروني مستخدم بالفعل']]
-        );
+    // 4. Insert or Update based on whether the user already has a record
+    if (recordExistsForEmail($sessionEmail)) {
+        updateInDatabase($sanitized, $sessionEmail);
+        sendResponse(true, 'تم تحديث المعلومات بنجاح', 200);
+    } else {
+        $id = saveToDatabase($sanitized);
+        sendResponse(true, 'تم حفظ المعلومات بنجاح', 201, ['id' => $id]);
     }
-
-    // 5. Save to database
-    $id = saveToDatabase($sanitized);
-
-    // 6. Success response
-    sendResponse(true, 'تم حفظ المعلومات بنجاح', 201, ['id' => $id]);
 
 } catch (PDOException $e) {
     error_log('Database error: ' . $e->getMessage());
@@ -189,6 +210,23 @@ function validateData($data) {
         $errors['diploma'] = 'الشهادة / الدبلوم مطلوب (2 أحرف على الأقل)';
     }
 
+    // القسم المُسند هذا العام
+    $validClasses = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة'];
+    if (empty($data['current_year_class']) || !in_array($data['current_year_class'], $validClasses)) {
+        $errors['current_year_class'] = 'القسم المُسند هذا العام مطلوب';
+    }
+
+    // عدد التلاميذ
+    if (!isset($data['student_count']) || !is_numeric($data['student_count'])
+        || (int)$data['student_count'] < 1 || (int)$data['student_count'] > 200) {
+        $errors['student_count'] = 'عدد التلاميذ غير صالح (بين 1 و 200)';
+    }
+
+    // معني بالحركة
+    if (empty($data['haraka']) || !in_array($data['haraka'], ['نعم', 'لا'])) {
+        $errors['haraka'] = 'يرجى تحديد ما إذا كنت معنيًا بالحركة';
+    }
+
     return $errors;
 }
 
@@ -219,8 +257,25 @@ function sanitizeData($data) {
         'phone'             => preg_replace('/[^\+0-9\-\s]/', '', trim($data['phone'])),
         'email'             => filter_var(trim($data['email']), FILTER_SANITIZE_EMAIL),
         'address'           => htmlspecialchars(trim($data['address']), ENT_QUOTES, 'UTF-8'),
-        'school_entry_date' => $data['school_entry_date'],
-        'diploma'           => htmlspecialchars(trim($data['diploma']), ENT_QUOTES, 'UTF-8')
+        'school_entry_date'       => $data['school_entry_date'],
+        'diploma'                 => htmlspecialchars(trim($data['diploma']), ENT_QUOTES, 'UTF-8'),
+        'first_appointment_date'  => $data['first_appointment_date'] ?? '',
+        'rank'                    => htmlspecialchars(trim($data['rank'] ?? ''), ENT_QUOTES, 'UTF-8'),
+        'status'                  => htmlspecialchars(trim($data['status'] ?? ''), ENT_QUOTES, 'UTF-8'),
+        'echelon'                 => htmlspecialchars(trim($data['echelon'] ?? ''), ENT_QUOTES, 'UTF-8'),
+        'grade'                   => htmlspecialchars(trim($data['grade'] ?? ''), ENT_QUOTES, 'UTF-8'),
+        'execution_date'          => $data['execution_date'] ?? '',
+        'latest_inspection_date'  => $data['latest_inspection_date'] ?? '',
+        'latest_inspection_score' => isset($data['latest_inspection_score']) && $data['latest_inspection_score'] !== '' ? (int)$data['latest_inspection_score'] : null,
+        'last_inspection_date'    => $data['last_inspection_date'] ?? '',
+        'last_inspection_score'   => isset($data['last_inspection_score']) && $data['last_inspection_score'] !== '' ? (int)$data['last_inspection_score'] : null,
+        'previous_year_class'     => htmlspecialchars(trim($data['previous_year_class'] ?? ''), ENT_QUOTES, 'UTF-8'),
+        'current_year_class'      => htmlspecialchars(trim($data['current_year_class']), ENT_QUOTES, 'UTF-8'),
+        'student_count'           => (int)$data['student_count'],
+        'haraka'                  => $data['haraka'],
+        'children_count'          => isset($data['children_count']) && $data['children_count'] !== '' ? (int)$data['children_count'] : null,
+        'tech_institute_grad_year' => htmlspecialchars(trim($data['tech_institute_grad_year'] ?? ''), ENT_QUOTES, 'UTF-8'),
+        'university_grad_year'    => htmlspecialchars(trim($data['university_grad_year'] ?? ''), ENT_QUOTES, 'UTF-8')
     ];
 }
 
@@ -228,7 +283,7 @@ function sanitizeData($data) {
 // Database Operations
 // ==========================================
 
-function isEmailTaken($email) {
+function recordExistsForEmail($email) {
     $pdo = getConnection();
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM personal_info WHERE email = :email");
     $stmt->execute([':email' => $email]);
@@ -261,34 +316,152 @@ function getConnection() {
 function saveToDatabase($data) {
     $pdo = getConnection();
 
-    $sql = "INSERT INTO personal_info 
-            (district, school_year, school_name, years_worked, first_name, family_name, maiden_name, birth_date, birth_place, residence, marital_status, spouse_name, gender, phone, email, address, school_entry_date, diploma, created_at) 
-            VALUES 
-            (:district, :school_year, :school_name, :years_worked, :first_name, :family_name, :maiden_name, :birth_date, :birth_place, :residence, :marital_status, :spouse_name, :gender, :phone, :email, :address, :school_entry_date, :diploma, datetime('now'));";
+    $sql = "INSERT INTO personal_info
+            (district, school_year, school_name, years_worked,
+             first_name, family_name, maiden_name, birth_date, birth_place,
+             residence, marital_status, spouse_name, gender, phone, email,
+             address, school_entry_date, diploma,
+             first_appointment_date, rank, status, echelon, grade, execution_date,
+             latest_inspection_date, latest_inspection_score,
+             last_inspection_date, last_inspection_score,
+             previous_year_class, current_year_class,
+             student_count, haraka, children_count,
+             tech_institute_grad_year, university_grad_year,
+             created_at)
+            VALUES
+            (:district, :school_year, :school_name, :years_worked,
+             :first_name, :family_name, :maiden_name, :birth_date, :birth_place,
+             :residence, :marital_status, :spouse_name, :gender, :phone, :email,
+             :address, :school_entry_date, :diploma,
+             :first_appointment_date, :rank, :status, :echelon, :grade, :execution_date,
+             :latest_inspection_date, :latest_inspection_score,
+             :last_inspection_date, :last_inspection_score,
+             :previous_year_class, :current_year_class,
+             :student_count, :haraka, :children_count,
+             :tech_institute_grad_year, :university_grad_year,
+             datetime('now'))";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
-        ':district'          => $data['district'],
-        ':school_year'       => $data['school_year'],
-        ':school_name'       => $data['school_name'],
-        ':years_worked'      => $data['years_worked'],
-        ':first_name'        => $data['first_name'],
-        ':family_name'       => $data['family_name'],
-        ':maiden_name'       => $data['maiden_name'],
-        ':birth_place'       => $data['birth_place'],
-        ':residence'         => $data['residence'],
-        ':marital_status'    => $data['marital_status'],
-        ':spouse_name'       => $data['spouse_name'],
-        ':birth_date'        => $data['birth_date'],
-        ':gender'            => $data['gender'],
-        ':phone'             => $data['phone'],
-        ':email'             => $data['email'],
-        ':address'           => $data['address'],
-        ':school_entry_date' => $data['school_entry_date'],
-        ':diploma'           => $data['diploma']
+        ':district'                 => $data['district'],
+        ':school_year'              => $data['school_year'],
+        ':school_name'              => $data['school_name'],
+        ':years_worked'             => $data['years_worked'],
+        ':first_name'               => $data['first_name'],
+        ':family_name'              => $data['family_name'],
+        ':maiden_name'              => $data['maiden_name'],
+        ':birth_place'              => $data['birth_place'],
+        ':residence'                => $data['residence'],
+        ':marital_status'           => $data['marital_status'],
+        ':spouse_name'              => $data['spouse_name'],
+        ':birth_date'               => $data['birth_date'],
+        ':gender'                   => $data['gender'],
+        ':phone'                    => $data['phone'],
+        ':email'                    => $data['email'],
+        ':address'                  => $data['address'],
+        ':school_entry_date'        => $data['school_entry_date'],
+        ':diploma'                  => $data['diploma'],
+        ':first_appointment_date'   => $data['first_appointment_date'] ?: null,
+        ':rank'                     => $data['rank'] ?: null,
+        ':status'                   => $data['status'] ?: null,
+        ':echelon'                  => $data['echelon'] ?: null,
+        ':grade'                    => $data['grade'] ?: null,
+        ':execution_date'           => $data['execution_date'] ?: null,
+        ':latest_inspection_date'   => $data['latest_inspection_date'] ?: null,
+        ':latest_inspection_score'  => $data['latest_inspection_score'],
+        ':last_inspection_date'     => $data['last_inspection_date'] ?: null,
+        ':last_inspection_score'    => $data['last_inspection_score'],
+        ':previous_year_class'      => $data['previous_year_class'] ?: null,
+        ':current_year_class'       => $data['current_year_class'],
+        ':student_count'            => $data['student_count'],
+        ':haraka'                   => $data['haraka'],
+        ':children_count'           => $data['children_count'],
+        ':tech_institute_grad_year' => $data['tech_institute_grad_year'] ?: null,
+        ':university_grad_year'     => $data['university_grad_year'] ?: null,
     ]);
 
     return $pdo->lastInsertId();
+}
+
+function updateInDatabase($data, $email) {
+    $pdo = getConnection();
+
+    $sql = "UPDATE personal_info SET
+            district = :district,
+            school_year = :school_year,
+            school_name = :school_name,
+            years_worked = :years_worked,
+            first_name = :first_name,
+            family_name = :family_name,
+            maiden_name = :maiden_name,
+            birth_date = :birth_date,
+            birth_place = :birth_place,
+            residence = :residence,
+            marital_status = :marital_status,
+            spouse_name = :spouse_name,
+            gender = :gender,
+            phone = :phone,
+            address = :address,
+            school_entry_date = :school_entry_date,
+            diploma = :diploma,
+            first_appointment_date = :first_appointment_date,
+            rank = :rank,
+            status = :status,
+            echelon = :echelon,
+            grade = :grade,
+            execution_date = :execution_date,
+            latest_inspection_date = :latest_inspection_date,
+            latest_inspection_score = :latest_inspection_score,
+            last_inspection_date = :last_inspection_date,
+            last_inspection_score = :last_inspection_score,
+            previous_year_class = :previous_year_class,
+            current_year_class = :current_year_class,
+            student_count = :student_count,
+            haraka = :haraka,
+            children_count = :children_count,
+            tech_institute_grad_year = :tech_institute_grad_year,
+            university_grad_year = :university_grad_year,
+            updated_at = datetime('now')
+        WHERE email = :email";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ':district'                 => $data['district'],
+        ':school_year'              => $data['school_year'],
+        ':school_name'              => $data['school_name'],
+        ':years_worked'             => $data['years_worked'],
+        ':first_name'              => $data['first_name'],
+        ':family_name'             => $data['family_name'],
+        ':maiden_name'             => $data['maiden_name'],
+        ':birth_place'             => $data['birth_place'],
+        ':residence'               => $data['residence'],
+        ':marital_status'          => $data['marital_status'],
+        ':spouse_name'             => $data['spouse_name'],
+        ':birth_date'              => $data['birth_date'],
+        ':gender'                  => $data['gender'],
+        ':phone'                   => $data['phone'],
+        ':address'                 => $data['address'],
+        ':school_entry_date'       => $data['school_entry_date'],
+        ':diploma'                 => $data['diploma'],
+        ':first_appointment_date'  => $data['first_appointment_date'] ?: null,
+        ':rank'                    => $data['rank'] ?: null,
+        ':status'                  => $data['status'] ?: null,
+        ':echelon'                 => $data['echelon'] ?: null,
+        ':grade'                   => $data['grade'] ?: null,
+        ':execution_date'          => $data['execution_date'] ?: null,
+        ':latest_inspection_date'  => $data['latest_inspection_date'] ?: null,
+        ':latest_inspection_score' => $data['latest_inspection_score'],
+        ':last_inspection_date'    => $data['last_inspection_date'] ?: null,
+        ':last_inspection_score'   => $data['last_inspection_score'],
+        ':previous_year_class'     => $data['previous_year_class'] ?: null,
+        ':current_year_class'      => $data['current_year_class'],
+        ':student_count'           => $data['student_count'],
+        ':haraka'                  => $data['haraka'],
+        ':children_count'          => $data['children_count'],
+        ':tech_institute_grad_year' => $data['tech_institute_grad_year'] ?: null,
+        ':university_grad_year'    => $data['university_grad_year'] ?: null,
+        ':email'                   => $email,
+    ]);
 }
 
 // ==========================================

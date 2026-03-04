@@ -32,6 +32,8 @@ const CONFIG = {
         firstAppointmentDate: 'يرجى اختيار تاريخ أول تعيين بالتعليم',
         rank: 'يرجى إدخال الرتبة (2 أحرف على الأقل)',
         status: 'يرجى إدخال الصفة (2 أحرف على الأقل)',
+        studentCount: 'يرجى إدخال عدد التلاميذ (بين 1 و 200)',
+        haraka: 'يرجى تحديد ما إذا كنت معنيًا بالحركة',
         networkError: 'حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.',
         serverError: 'حدث خطأ في الخادم. يرجى المحاولة لاحقاً.',
     }
@@ -199,6 +201,15 @@ const validators = {
 
     currentYearClass(value) {
         return value !== '' && value !== null && value !== undefined;
+    },
+
+    studentCount(value) {
+        const n = Number(value);
+        return value !== '' && Number.isInteger(n) && n >= 1 && n <= 200;
+    },
+
+    haraka() {
+        return document.querySelector('input[name="haraka"]:checked') !== null;
     }
 };
 
@@ -239,7 +250,9 @@ function validateField(fieldName) {
         latestInspectionDate: { element: 'latestInspectionDate', errorId: 'latestInspectionDateError' },
         latestInspectionScore: { element: 'latestInspectionScore', errorId: 'latestInspectionScoreError' },
         previousYearClass: { element: 'previousYearClass', errorId: 'previousYearClassError' },
-        currentYearClass: { element: 'currentYearClass', errorId: 'currentYearClassError' }
+        currentYearClass: { element: 'currentYearClass', errorId: 'currentYearClassError' },
+        studentCount: { element: 'studentCount', errorId: 'studentCountError' },
+        haraka: { element: null, errorId: 'harakaError' }
     };
 
     const config = fieldMap[fieldName];
@@ -270,7 +283,7 @@ function validateField(fieldName) {
  * Validate entire form
  */
 function validateForm() {
-    const fields = ['district', 'schoolYear', 'schoolName', 'yearsWorked', 'firstName', 'familyName', 'maidenName', 'birthDate', 'birthPlace', 'residence', 'gender', 'maritalStatus', 'childrenCount', 'spouseName', 'phone', 'email', 'address', 'diploma', 'firstAppointmentDate', 'rank', 'status', 'techInstituteGradYear', 'universityGradYear', 'lastInspectionDate', 'lastInspectionScore', 'echelon', 'grade', 'executionDate', 'latestInspectionDate', 'latestInspectionScore', 'previousYearClass', 'currentYearClass'];
+    const fields = ['district', 'schoolYear', 'schoolName', 'yearsWorked', 'firstName', 'familyName', 'maidenName', 'birthDate', 'birthPlace', 'residence', 'gender', 'maritalStatus', 'childrenCount', 'spouseName', 'phone', 'email', 'address', 'diploma', 'firstAppointmentDate', 'rank', 'status', 'techInstituteGradYear', 'universityGradYear', 'lastInspectionDate', 'lastInspectionScore', 'echelon', 'grade', 'executionDate', 'latestInspectionDate', 'latestInspectionScore', 'previousYearClass', 'currentYearClass', 'studentCount', 'haraka'];
     let isFormValid = true;
 
     fields.forEach(field => {
@@ -336,6 +349,21 @@ function validateForm() {
 ['previousYearClass', 'currentYearClass'].forEach(fieldId => {
     const el = document.getElementById(fieldId);
     if (el) el.addEventListener('change', () => validateField(fieldId));
+});
+
+// Student count
+const studentCountInput = document.getElementById('studentCount');
+if (studentCountInput) {
+    studentCountInput.addEventListener('blur', () => validateField('studentCount'));
+    studentCountInput.addEventListener('input', () => {
+        const formGroup = studentCountInput.closest('.form-group');
+        if (formGroup.classList.contains('error')) validateField('studentCount');
+    });
+}
+
+// Haraka radios
+document.querySelectorAll('input[name="haraka"]').forEach(radio => {
+    radio.addEventListener('change', () => validateField('haraka'));
 });
 
 // Radio buttons
@@ -477,8 +505,12 @@ form.addEventListener('submit', async function(e) {
         latest_inspection_date: document.getElementById('latestInspectionDate').value || null,
         latest_inspection_score: document.getElementById('latestInspectionScore').value !== '' ? parseInt(document.getElementById('latestInspectionScore').value, 10) : null,
         previous_year_class: document.getElementById('previousYearClass').value || null,
-        current_year_class: document.getElementById('currentYearClass').value
+        current_year_class: document.getElementById('currentYearClass').value,
+        student_count: document.getElementById('studentCount').value !== '' ? parseInt(document.getElementById('studentCount').value, 10) : null,
+        haraka: document.querySelector('input[name="haraka"]:checked')?.value || ''
     };
+
+    console.log('[FormSubmit] Données envoyées au serveur :', JSON.stringify(formData, null, 2));
 
     // Show loading state
     setLoadingState(true);
@@ -615,6 +647,8 @@ function collectFormData() {
         latestInspectionScore    : get('latestInspectionScore'),
         previousYearClass        : get('previousYearClass'),
         currentYearClass         : get('currentYearClass'),
+        studentCount             : get('studentCount'),
+        haraka                   : radio('haraka'),
     };
 }
 
@@ -901,95 +935,8 @@ async function generatePDF() {
     }
 }
 
-// ==========================================
-// Initialisation depuis amri.json
-// ==========================================
-
-/**
- * Charge amri.json et pré-remplit le formulaire au lancement.
- */
-async function fillFormFromJSON() {
-    let data;
-    try {
-        const res = await fetch('amri.json');
-        if (!res.ok) return;
-        data = await res.json();
-    } catch (e) {
-        console.warn('Impossible de charger amri.json :', e);
-        return;
-    }
-
-    // Utilitaires
-    const set = (id, value) => {
-        const el = document.getElementById(id);
-        if (el && value !== null && value !== undefined) el.value = value;
-    };
-    const setRadio = (name, value) => {
-        if (value === null || value === undefined) return;
-        const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
-        if (radio) radio.checked = true;
-    };
-    const setSelect = (id, value) => {
-        if (value === null || value === undefined) return;
-        const sel = document.getElementById(id);
-        if (!sel) return;
-        // cherche l'option correspondante
-        const str = String(value);
-        for (const opt of sel.options) {
-            if (opt.value === str) { sel.value = str; return; }
-        }
-    };
-
-    // Champs texte / nombre / date
-    set('yearsWorked',           data['عدد سنوات العمل فعليا']);
-    set('familyName',            data['الاسم العائلي (بالعربية)']);
-    set('firstName',             data['الاسم الشخصي']);
-    set('residence',             data['مكان الإقامة']);
-    set('birthDate',             data['تاريخ الازدياد']);
-    set('birthPlace',            data['مكان الازدياد']);
-    set('phone',                 data['رقم الهاتف']);
-    set('email',                 data['البريد الإلكتروني']);
-    set('diploma',               data['التخصص / العلوم المحصل عليها']);
-    set('firstAppointmentDate',  data['تاريخ أول تعيين بالمؤسسة']);
-    set('echelon',               data['السلم']);
-    set('executionDate',         data['تاريخ الترسيم/التثبيت']);
-    set('latestInspectionScore', data['رصيد آخر تفويض - العتبة']);
-    set('latestInspectionDate',  data['رصيد آخر تفويض - التاريخ']);
-    set('lastInspectionScore',   data['رصيد الانتقال من قبل الآخر - العتبة']);
-    set('lastInspectionDate',    data['رصيد الانتقال من قبل الآخر - التاريخ']);
-
-    // Selects
-    setSelect('grade',               data['الدرجة']);
-    setSelect('universityGradYear',  data['سنة الخروج من الجامعة']);
-    setSelect('previousYearClass',   data['القسم المسند العام الماضي']);
-    setSelect('currentYearClass',    data['القسم المسند هذا الموسم']);
-
-    // "الصفة" : la valeur JSON peut avoir des parenthèses en trop → "(متعاقد(ة))" → "متعاقد(ة)"
-    const rawStatus = data['الصفة'];
-    if (rawStatus) {
-        const cleanStatus = rawStatus.replace(/^\((.+)\)$/, '$1');
-        setSelect('status', cleanStatus);
-    }
-
-    // Radio : جنس (gender) — doit être défini en premier pour activer la section الحالة المدنية
-    const genre = data['الجنس'];
-    if (genre) {
-        setRadio('gender', genre);
-        updateMaritalLabels(genre);
-        document.getElementById('civil').style.display = 'block';
-    }
-
-    // Radio : الحالة المدنية
-    const marital = data['الحالة المدنية'];
-    if (marital) {
-        setRadio('marital_status', marital);
-        updateChildrenCountVisibility();
-        updateSpouseNameVisibility();
-    }
-}
-
-// Lancer au chargement de la page
-fillFormFromJSON();
+// Le pré-remplissage du formulaire est géré par auth.js (_prefillFormFromDB)
+// qui est appelé après vérification de la session dans checkAuth().
 
 /**
  * Reset form to initial state (called from success screen)
