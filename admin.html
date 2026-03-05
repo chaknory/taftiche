@@ -565,11 +565,13 @@
                             <th>#</th>
                             <th>الاسم</th>
                             <th>اللقب</th>
-                            <th>الجنس</th>
-                            <th>الهاتف</th>
                             <th>المدرسة</th>
                             <th>الرتبة</th>
-                            <th>تاريخ الإنشاء</th>
+                            <th>تاريخ التعيين الأول</th>
+                            <th>السلم</th>
+                            <th>الدرجة</th>
+                            <th>تاريخ آخر تفتيش</th>
+                            <th>علامة آخر تفتيش</th>
                             <th colspan="3">إجراءات</th>
                         </tr>
                     </thead>
@@ -755,7 +757,7 @@
             <input id="ef_status" type="text" maxlength="100">
           </div>
           <div class="edit-field">
-            <label>السلم (الإشالون)</label>
+            <label>السلم </label>
             <input id="ef_echelon" type="text" maxlength="20">
           </div>
           <div class="edit-field">
@@ -776,7 +778,7 @@
             <input id="ef_latest_inspection_date" type="date">
           </div>
           <div class="edit-field">
-            <label>نتيجة التفتيش قبل الأخير</label>
+            <label> علامة التفتيش قبل الأخير</label>
             <input id="ef_latest_inspection_score" type="number" min="0" max="40">
           </div>
           <div class="edit-field">
@@ -784,7 +786,7 @@
             <input id="ef_last_inspection_date" type="date">
           </div>
           <div class="edit-field">
-            <label>نتيجة آخر تفتيش</label>
+            <label> علامة آخر تفتيش</label>
             <input id="ef_last_inspection_score" type="number" min="0" max="40">
           </div>
         </div>
@@ -1088,7 +1090,7 @@
             <input id="ar_latest_inspection_date" type="date">
           </div>
           <div class="edit-field">
-            <label>نتيجة آخر تفتيش</label>
+            <label>علامة آخر تفتيش</label>
             <input id="ar_latest_inspection_score" type="number" min="0" max="20" placeholder="0">
           </div>
           <div class="edit-field">
@@ -1096,7 +1098,7 @@
             <input id="ar_last_inspection_date" type="date">
           </div>
           <div class="edit-field">
-            <label>نتيجة التفتيش قبل الأخير</label>
+            <label>علامة التفتيش قبل الأخير</label>
             <input id="ar_last_inspection_score" type="number" min="0" max="20" placeholder="0">
           </div>
         </div>
@@ -1292,7 +1294,7 @@
         body.innerHTML        = '';
 
         if (!list.length) {
-            body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-light);padding:30px">لا توجد بيانات</td></tr>';
+            body.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--text-light);padding:30px">لا توجد بيانات</td></tr>';
             return;
         }
 
@@ -1302,19 +1304,19 @@
                 <td>${i + 1}</td>
                 <td>${esc(r.first_name)}</td>
                 <td>${esc(r.family_name)}</td>
-                <td>${r.gender === 'ذكر' ? 'ذكر' : (r.gender === 'أنثى' ? 'أنثى' : (r.gender || '–'))}</td>
-                <td>${esc(r.phone) || '–'}</td>
                 <td>${esc(r.school_name) || '–'}</td>
                 <td>${esc(r.rank) || '–'}</td>
-                <td>${fmtDate(r.created_at)}</td>
-                <td style="white-space:nowrap">
+                <td>${fmtDate(r.first_appointment_date)}</td>
+                <td>${esc(r.echelon) || '–'}</td>
+                <td>${esc(r.grade) || '–'}</td>
+                <td>${fmtDate(r.last_inspection_date)}</td>
+                <td>${r.last_inspection_score ?? '–'}</td>
+                <td style="white-space:nowrap" colspan="3">
+                    <div style="display:flex;gap:4px;flex-wrap:nowrap;align-items:center;justify-content:center">
                     <button class="btn-action btn-pdf"  data-id="${r.id}" title="تصدير PDF">↓ PDF</button>
-                </td>
-                <td style="white-space:nowrap">
-                    <button class="btn-action btn-edit" data-id="${r.id}" title="عرض / تعديل">تعديل</button>  
-                </td>
-                <td style="white-space:nowrap">
+                    <button class="btn-action btn-edit" data-id="${r.id}" title="عرض / تعديل">تعديل</button>
                     <button class="btn-action btn-del"  data-id="${r.id}" title="حذف">حذف</button>
+                    </div>
                 </td>
             `;
             body.appendChild(tr);
