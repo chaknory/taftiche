@@ -613,42 +613,51 @@ function collectFormData() {
     const radio = name => document.querySelector(`input[name="${name}"]:checked`)?.value ?? '';
     const visible = id => document.getElementById(id)?.style.display !== 'none';
 
+    // Timetable rows
+    const ttDays = ['sun', 'mon', 'tue', 'wed', 'thu'];
+    const ttDayNames = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
+    const timetable = ttDays.map((d, i) => ({
+        day: ttDayNames[i],
+        slots: [1, 2, 3, 4, 5, 6, 7].map(n => document.querySelector(`input[name="tt_${d}_${n}"]`)?.value.trim() || ''),
+    }));
+
     return {
-        district        : get('district'),
-        schoolYear      : get('schoolYear'),
-        schoolName      : get('schoolName'),
-        yearsWorked     : get('yearsWorked'),
-        firstName       : get('firstName'),
-        familyName      : get('familyName'),
-        maidenName      : get('maidenName'),
-        birthDate       : get('birthDate'),
-        birthPlace      : get('birthPlace'),
-        residence       : get('residence'),
-        gender          : radio('gender'),
-        maritalStatus   : radio('marital_status'),
-        childrenCount   : visible('childrenCountGroup') ? get('childrenCount') : '—',
-        spouseName      : visible('spouseNameGroup')    ? get('spouseName')    : '',
-        phone           : get('phone'),
-        email           : get('email'),
-        address         : get('address'),
-        schoolEntryDate         : get('schoolEntryDate'),
-        diploma                  : get('diploma'),
-        techInstituteGradYear    : get('techInstituteGradYear'),
-        universityGradYear       : get('universityGradYear'),
-        firstAppointmentDate     : get('firstAppointmentDate'),
-        rank                     : get('rank'),
-        status                   : get('status'),
-        lastInspectionDate       : get('lastInspectionDate'),
-        lastInspectionScore      : get('lastInspectionScore'),
-        echelon                  : get('echelon'),
-        grade                    : get('grade'),
-        executionDate            : get('executionDate'),
-        latestInspectionDate     : get('latestInspectionDate'),
-        latestInspectionScore    : get('latestInspectionScore'),
-        previousYearClass        : get('previousYearClass'),
-        currentYearClass         : get('currentYearClass'),
-        studentCount             : get('studentCount'),
-        haraka                   : radio('haraka'),
+        district             : get('district'),
+        schoolYear           : get('schoolYear'),
+        schoolName           : get('schoolName'),
+        yearsWorked          : get('yearsWorked'),
+        firstName            : get('firstName'),
+        familyName           : get('familyName'),
+        maidenName           : get('maidenName'),
+        birthDate            : get('birthDate'),
+        birthPlace           : get('birthPlace'),
+        residence            : get('residence'),
+        gender               : radio('gender'),
+        maritalStatus        : radio('marital_status'),
+        childrenCount        : visible('childrenCountGroup') ? get('childrenCount') : '',
+        spouseName           : visible('spouseNameGroup')    ? get('spouseName')    : '',
+        phone                : get('phone'),
+        email                : get('email'),
+        address              : get('address'),
+        schoolEntryDate      : get('schoolEntryDate'),
+        diploma              : get('diploma'),
+        techInstituteGradYear: get('techInstituteGradYear'),
+        universityGradYear   : get('universityGradYear'),
+        firstAppointmentDate : get('firstAppointmentDate'),
+        rank                 : get('rank'),
+        status               : get('status'),
+        lastInspectionDate   : get('lastInspectionDate'),
+        lastInspectionScore  : get('lastInspectionScore'),
+        echelon              : get('echelon'),
+        grade                : get('grade'),
+        executionDate        : get('executionDate'),
+        latestInspectionDate : get('latestInspectionDate'),
+        latestInspectionScore: get('latestInspectionScore'),
+        previousYearClass    : get('previousYearClass'),
+        currentYearClass     : get('currentYearClass'),
+        studentCount         : get('studentCount'),
+        haraka               : radio('haraka'),
+        timetable,
     };
 }
 
@@ -663,21 +672,60 @@ function formatDate(iso) {
 
 /**
  * Build and return the off-screen PDF template element.
+ * Layout mirrors the form exactly: same field order, same side-by-side groupings.
  */
 function buildPDFTemplate(data) {
     const fullName = [data.familyName, data.firstName, data.maidenName ? `(${data.maidenName})` : ''].filter(Boolean).join(' ');
 
-    const row = (label, value) => `
+    // ── helpers ──────────────────────────────────────────────────
+    // Section header spanning all 6 columns
+    const sec = title => `
         <tr>
-            <td class="cell-label">${label}</td>
-            <td class="cell-value">${value || '—'}</td>
+            <td colspan="6" style="
+                padding:6px 12px;
+                background:#1a3a5c;
+                color:#fff;
+                font-weight:700;
+                font-size:11.5px;
+                border-right:4px solid #c8a45a;
+            ">${title}</td>
         </tr>`;
 
-    const section = (title, rows) => `
-        <div class="pdf-section">
-            <div class="section-title">${title}</div>
-            <table class="info-table">${rows}</table>
-        </div>`;
+    // Single full-width row
+    const full = (label, value) => `
+        <tr>
+            <td class="lbl" colspan="2">${label}</td>
+            <td class="val" colspan="4">${value || '—'}</td>
+        </tr>`;
+
+    // Two side-by-side fields (2 label+value pairs)
+    const dual = (l1, v1, l2, v2) => `
+        <tr>
+            <td class="lbl">${l1}</td>
+            <td class="val" colspan="2">${v1 || '—'}</td>
+            <td class="lbl">${l2}</td>
+            <td class="val" colspan="2">${v2 || '—'}</td>
+        </tr>`;
+
+    // Three side-by-side fields
+    const tri = (l1, v1, l2, v2, l3, v3) => `
+        <tr>
+            <td class="lbl">${l1}</td>
+            <td class="val">${v1 || '—'}</td>
+            <td class="lbl">${l2}</td>
+            <td class="val">${v2 || '—'}</td>
+            <td class="lbl">${l3}</td>
+            <td class="val">${v3 || '—'}</td>
+        </tr>`;
+
+    // Timetable rows
+    const ttRows = (data.timetable || []).map(r => `
+        <tr>
+            <td class="tt-day">${r.day}</td>
+            ${r.slots.slice(0, 4).map(s => `<td class="tt-slot">${s}</td>`).join('')}
+            <td class="tt-break"></td>
+            ${r.slots.slice(4).map(s => `<td class="tt-slot">${s}</td>`).join('')}
+        </tr>`).join('');
 
     const html = `
         <div id="pdfTemplate" style="
@@ -686,179 +734,133 @@ function buildPDFTemplate(data) {
             background: #ffffff;
             font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
             direction: rtl;
-            padding: 40px 50px 50px;
+            padding: 40px 50px 80px;
             box-sizing: border-box;
             position: relative;
             color: #1a2e44;
         ">
             <!-- Outer border -->
-            <div style="
-                position: absolute; inset: 16px;
-                border: 2px solid #1a3a5c;
-                pointer-events: none;
-                border-radius: 4px;
-            "></div>
-
-            <!-- Inner border -->
-            <div style="
-                position: absolute; inset: 20px;
-                border: 1px solid #c8a45a;
-                pointer-events: none;
-                border-radius: 2px;
-            "></div>
+            <div style="position:absolute;inset:16px;border:2px solid #1a3a5c;pointer-events:none;border-radius:4px;"></div>
+            <div style="position:absolute;inset:20px;border:1px solid #c8a45a;pointer-events:none;border-radius:2px;"></div>
 
             <!-- ===== Header ===== -->
-            <div style="text-align:center; margin-bottom: 28px;">
-                <p style="font-size:13px; font-weight:700; color:#1a3a5c; margin:0 0 2px;">
-                    الجمهورية الجزائرية الديمقراطية الشعبية
-                </p>
-                <p style="font-size:12px; color:#555; margin:0 0 2px;">
-                    وزارة التربية الوطنية
-                </p>
-                <p style="font-size:12px; font-weight:600; color:#1a3a5c; margin:0 0 2px;">
-                    مديرية التربية لولاية بسكرة
-                </p>
-                <p style="font-size:11px; color:#555; margin:0;">
-                    مفتشية التعليم الابتدائي — المقاطعة ${data.district}
-                </p>
-
-                <!-- Decorative divider -->
-                <div style="display:flex; align-items:center; gap:8px; margin:14px auto; width:70%;">
-                    <div style="flex:1; height:1px; background:#c8a45a;"></div>
-                    <div style="width:6px; height:6px; background:#c8a45a; transform:rotate(45deg); flex-shrink:0;"></div>
-                    <div style="flex:1; height:1px; background:#c8a45a;"></div>
+            <div style="text-align:center; margin-bottom:20px;">
+                <p style="font-size:13px;font-weight:700;color:#1a3a5c;margin:0 0 2px;">الجمهورية الجزائرية الديمقراطية الشعبية</p>
+                <p style="font-size:12px;color:#555;margin:0 0 2px;">وزارة التربية الوطنية</p>
+                <p style="font-size:12px;font-weight:600;color:#1a3a5c;margin:0 0 2px;">مديرية التربية لولاية بسكرة</p>
+                <p style="font-size:11px;color:#555;margin:0;">مفتشية التعليم الابتدائي</p>
+                <div style="display:flex;align-items:center;gap:8px;margin:12px auto;width:70%;">
+                    <div style="flex:1;height:1px;background:#c8a45a;"></div>
+                    <div style="width:6px;height:6px;background:#c8a45a;transform:rotate(45deg);flex-shrink:0;"></div>
+                    <div style="flex:1;height:1px;background:#c8a45a;"></div>
                 </div>
-
-                <h1 style="font-size:17px; font-weight:700; color:#1a3a5c; margin:0 0 4px;">
-                    البطاقة الشخصية لأستاذ اللغة العربية
-                </h1>
-                <p style="font-size:11px; color:#777; margin:0;">
-                    السنة الدراسية: <strong>${data.schoolYear}</strong>
-                </p>
+                <h1 style="font-size:16px;font-weight:700;color:#1a3a5c;margin:0 0 6px;">البطاقة الشخصية لأستاذ اللغة العربية</h1>
+                <p style="font-size:11px;color:#777;margin:0;">يرجى ملء جميع الحقول المطلوبة بدقة</p>
             </div>
 
             <!-- ===== Full name banner ===== -->
-            <div style="
-                background: linear-gradient(135deg, #1a3a5c, #2c5282);
-                color: #fff;
-                text-align: center;
-                padding: 10px 20px;
-                border-radius: 4px;
-                margin-bottom: 24px;
-                font-size: 15px;
-                font-weight: 700;
-            ">
+            <div style="background:linear-gradient(135deg,#1a3a5c,#2c5282);color:#fff;text-align:center;padding:10px 20px;border-radius:4px;margin-bottom:18px;font-size:15px;font-weight:700;">
                 ${fullName}
             </div>
 
             <style>
-                .pdf-section { margin-bottom: 20px; }
-                .section-title {
-                    font-size: 12px;
-                    font-weight: 700;
-                    color: #fff;
-                    background: #1a3a5c;
-                    padding: 5px 12px;
-                    border-radius: 3px 3px 0 0;
-                    border-right: 4px solid #c8a45a;
-                }
-                .info-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    font-size: 11.5px;
-                }
-                .info-table tr:nth-child(even) { background: #f7f9fc; }
-                .cell-label {
-                    width: 36%;
-                    padding: 7px 12px;
-                    color: #555;
-                    font-weight: 600;
-                    border: 1px solid #dde3ed;
-                    border-right: 3px solid #c8a45a;
-                    white-space: nowrap;
-                }
-                .cell-value {
-                    padding: 7px 14px;
-                    color: #1a2e44;
-                    font-weight: 500;
-                    border: 1px solid #dde3ed;
-                    word-break: break-word;
-                }
+                .pdf-tbl { width:100%; border-collapse:collapse; font-size:11px; margin-bottom:14px; }
+                .lbl { padding:6px 10px; background:#eef1f6; color:#1a3a5c; font-weight:700; border:1px solid #c8d0db; white-space:nowrap; width:14%; }
+                .val { padding:6px 12px; color:#1a2e44; border:1px solid #c8d0db; word-break:break-word; }
+                .tt-tbl { width:100%; border-collapse:collapse; font-size:10.5px; }
+                .tt-hdr { background:#1a3a5c; color:#fff; padding:5px 4px; text-align:center; border:1px solid #2c5282; font-weight:600; font-size:10px; }
+                .tt-period { background:#2c5282; color:#fff; padding:4px; text-align:center; border:1px solid #2c5282; font-size:10px; }
+                .tt-day { background:#eef1f6; color:#1a3a5c; font-weight:700; padding:5px 8px; border:1px solid #c8d0db; text-align:center; white-space:nowrap; }
+                .tt-slot { padding:5px 4px; border:1px solid #c8d0db; text-align:center; min-width:56px; }
+                .tt-break { background:#f7f9fc; border:1px solid #c8d0db; width:36px; }
             </style>
 
-            ${section('المعلومات المدرسية', `
-                ${row('اسم المدرسة', data.schoolName)}
-                ${row('عدد سنوات العمل', data.yearsWorked)}
-                ${row('الشهادة / الدبلوم المحصل عليه', data.diploma)}
-                ${row('تاريخ الدخول المدرسي الأولي', formatDate(data.schoolEntryDate))}
-                ${row('تاريخ أول تعيين بالتعليم', formatDate(data.firstAppointmentDate))}
-                ${row('الرتبة', data.rank)}
-                ${row('الصفة', data.status)}
-                ${data.lastInspectionDate ? row('تاريخ التفتيش ما قبل الأخير', formatDate(data.lastInspectionDate)) : ''}
-                ${data.lastInspectionScore !== '' && data.lastInspectionScore !== undefined ? row('علامة التفتيش ما قبل الأخير', data.lastInspectionScore) : ''}
-                ${data.latestInspectionDate ? row('تاريخ آخر تفتيش', formatDate(data.latestInspectionDate)) : ''}
-                ${data.latestInspectionScore !== '' && data.latestInspectionScore !== undefined ? row('علامة آخر تفتيش', data.latestInspectionScore) : ''}
-                ${data.echelon ? row('السلم', data.echelon) : ''}
-                ${data.grade ? row('الدرجة', data.grade) : ''}
-                ${data.executionDate ? row('تاريخ التنفيذ', formatDate(data.executionDate)) : ''}
-                ${data.techInstituteGradYear ? row('سنة التخرج من المعهد التكنولوجي', data.techInstituteGradYear) : ''}
-                ${data.universityGradYear ? row('سنة التخرج من الجامعة', data.universityGradYear) : ''}
-                ${data.previousYearClass ? row('القسم المُسند العام الماضي', data.previousYearClass) : ''}
-                ${row('القسم المُسند هذا العام', data.currentYearClass)}
-            `)}
+            <!-- ===== Main data table ===== -->
+            <table class="pdf-tbl">
 
-            ${section('المعلومات الشخصية', `
-                ${row('الجنس', data.gender)}
-                ${row('تاريخ الميلاد', formatDate(data.birthDate))}
-                ${row('مكان الميلاد', data.birthPlace)}
-                ${row('مكان الإقامة', data.residence)}
-                ${row('الحالة المدنية', data.maritalStatus)}
-                ${data.spouseName ? row('اسم ولقب الزوج', data.spouseName) : ''}
-                ${row('عدد الأطفال', data.childrenCount)}
-            `)}
+                ${sec('المعلومات المدرسية')}
+                ${dual('المقاطعة المدرسية', data.district, 'العام الدراسي', data.schoolYear)}
+                ${dual('اسم المدرسة', data.schoolName, 'عدد سنوات العمل فيها', data.yearsWorked)}
 
-            ${section('معلومات الاتصال', `
-                ${row('رقم الهاتف', data.phone)}
-                ${row('البريد الإلكتروني', data.email)}
-                ${row('العنوان', data.address)}
-            `)}
+                ${sec('المعلومات الشخصية')}
+                ${full('مكان الإقامة', data.residence)}
+                ${full('الجنس', data.gender)}
+                ${tri('الاسم الشخصي', data.firstName, 'الاسم العائلي', data.familyName, 'اللقب الأصلي للمتزوجة', data.maidenName)}
+                ${dual('تاريخ الميلاد', formatDate(data.birthDate), 'مكان الميلاد', data.birthPlace)}
+                ${data.maritalStatus ? full('الحالة المدنية', data.maritalStatus) : ''}
+                ${data.childrenCount !== '' ? full('عدد الأطفال', data.childrenCount) : ''}
+                ${data.spouseName ? full('إسم و لقب الزوج', data.spouseName) : ''}
+
+                ${sec('معلومات الاتصال')}
+                ${full('رقم الهاتف', data.phone)}
+                ${full('البريد الإلكتروني', data.email)}
+                ${dual('سنة التخرج من المعهد التكنولوجي', data.techInstituteGradYear, 'سنة التخرج من الجامعة', data.universityGradYear)}
+                ${full('العنوان', data.address)}
+
+                ${sec('المسار المهني')}
+                ${full('الشهادة / الدبلوم المحصل عليه', data.diploma)}
+                ${data.schoolEntryDate ? full('تاريخ الدخول المدرسي الأولي', formatDate(data.schoolEntryDate)) : ''}
+                ${full('تاريخ أول تعيين بالتعليم', formatDate(data.firstAppointmentDate))}
+                ${dual('الرتبة', data.rank, 'الصفة', data.status)}
+                ${tri('السلم', data.echelon, 'الدرجة', data.grade, 'تاريخ التنفيذ', formatDate(data.executionDate))}
+                ${dual('تاريخ آخر تفتيش', formatDate(data.latestInspectionDate), 'علامته', data.latestInspectionScore)}
+                ${dual('تاريخ التفتيش ما قبل الأخير', formatDate(data.lastInspectionDate), 'علامته', data.lastInspectionScore)}
+
+                ${sec('معلومات القسم')}
+                ${dual('القسم المُسند العام الماضي', data.previousYearClass, 'القسم المُسند هذا العام', data.currentYearClass)}
+                ${dual('عدد التلاميذ', data.studentCount, 'معني بالحركة', data.haraka)}
+
+            </table>
+
+            <!-- ===== Timetable ===== -->
+            <div style="margin-bottom:14px;">
+                <div style="background:#1a3a5c;color:#fff;padding:6px 12px;font-weight:700;font-size:11.5px;border-right:4px solid #c8a45a;">
+                    التوزيع الأسبوعي
+                    <span style="font-size:10px;font-weight:400;color:#c8a45a;margin-right:12px;">الفترة الصباحية: 4 حصص &nbsp;|&nbsp; الفترة المسائية: 3 حصص</span>
+                </div>
+                <table class="tt-tbl">
+                    <thead>
+                        <tr>
+                            <th class="tt-hdr" rowspan="2" style="width:60px;">الأيام</th>
+                            <th class="tt-period" colspan="4">الفترة الصباحية</th>
+                            <th class="tt-hdr" rowspan="2" style="width:36px;">استراحة</th>
+                            <th class="tt-period" colspan="3">الفترة المسائية</th>
+                        </tr>
+                        <tr>
+                            <th class="tt-hdr">1</th>
+                            <th class="tt-hdr">2</th>
+                            <th class="tt-hdr">3</th>
+                            <th class="tt-hdr">4</th>
+                            <th class="tt-hdr">5</th>
+                            <th class="tt-hdr">6</th>
+                            <th class="tt-hdr">7</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${ttRows}
+                    </tbody>
+                </table>
+            </div>
 
             <!-- ===== Signature area ===== -->
-            <div style="
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-end;
-                margin-top: 32px;
-                padding-top: 16px;
-                border-top: 1px solid #dde3ed;
-                font-size: 11px;
-                color: #666;
-            ">
-                <div style="text-align:center; min-width:160px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:20px;padding-top:14px;border-top:1px solid #dde3ed;font-size:11px;color:#666;">
+                <div style="text-align:center;min-width:160px;">
                     <p style="margin:0 0 32px;">المفتش</p>
-                    <div style="border-top:1px solid #aaa; width:120px; margin:0 auto;"></div>
-                    <p style="margin:4px 0 0; font-size:10px; color:#999;">التوقيع والختم</p>
+                    <div style="border-top:1px solid #aaa;width:120px;margin:0 auto;"></div>
+                    <p style="margin:4px 0 0;font-size:10px;color:#999;">التوقيع والختم</p>
                 </div>
-                <div style="text-align:center; font-size:10px; color:#aaa;">
+                <div style="text-align:center;font-size:10px;color:#aaa;">
                     <p style="margin:0;">تاريخ الإصدار: ${new Date().toLocaleDateString('ar-DZ')}</p>
                 </div>
-                <div style="text-align:center; min-width:160px;">
+                <div style="text-align:center;min-width:160px;">
                     <p style="margin:0 0 32px;">الأستاذ / الأستاذة</p>
-                    <div style="border-top:1px solid #aaa; width:120px; margin:0 auto;"></div>
-                    <p style="margin:4px 0 0; font-size:10px; color:#999;">التوقيع</p>
+                    <div style="border-top:1px solid #aaa;width:120px;margin:0 auto;"></div>
+                    <p style="margin:4px 0 0;font-size:10px;color:#999;">التوقيع</p>
                 </div>
             </div>
 
             <!-- Footer strip -->
-            <div style="
-                position: absolute;
-                bottom: 28px; left: 28px; right: 28px;
-                text-align: center;
-                font-size: 9px;
-                color: #bbb;
-                border-top: 1px solid #eee;
-                padding-top: 6px;
-            ">
+            <div style="position:absolute;bottom:28px;left:28px;right:28px;text-align:center;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:6px;">
                 سماح علمي — جميع الحقوق محفوظة — 2026
             </div>
         </div>`;

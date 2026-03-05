@@ -44,7 +44,11 @@
     // ── Vérifier si déjà connecté ─────────────────────────────────────────
     fetch('api/auth/session.php', { credentials: 'same-origin' })
         .then(r => r.json())
-        .then(data => { if (data.success) window.location.href = 'index.html'; })
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.user.role === 'admin' ? 'admin.html' : 'index.html';
+            }
+        })
         .catch(() => {});
 
     // ── Afficher / masquer le mot de passe ────────────────────────────────
@@ -92,7 +96,8 @@
 
             if (data.success) {
                 showAlert('success', 'تم تسجيل الدخول بنجاح… جارٍ التحويل');
-                setTimeout(() => { window.location.href = 'index.html'; }, 800);
+                const dest = data.user.role === 'admin' ? 'admin.html' : 'index.html';
+                setTimeout(() => { window.location.href = dest; }, 800);
             } else {
                 showAlert('error', data.message || 'حدث خطأ، يرجى المحاولة مجددًا');
                 setLoading(false);

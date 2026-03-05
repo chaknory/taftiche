@@ -12,7 +12,7 @@
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
@@ -58,7 +58,120 @@ try {
     if (json_last_error() !== JSON_ERROR_NONE) {
         authJsonResponse(false, 'JSON غير صالح', 400);
     }
+    // ── POST : création d'une nouvelle fiche ──────────────────────────────
+    if ($method === 'POST') {
+        $s2 = fn($k) => htmlspecialchars(trim($body[$k] ?? ''), ENT_QUOTES, 'UTF-8');
 
+        $firstName            = $s2('first_name');
+        $familyName           = $s2('family_name');
+        $maidenName           = $s2('maiden_name');
+        $gender               = in_array($body['gender'] ?? '', ['ذكر','أنثى'], true) ? $body['gender'] : '';
+        $birthDate            = $body['birth_date']               ?? '';
+        $birthPlace           = $s2('birth_place');
+        $residence            = $s2('residence');
+        $maritalStatus        = in_array($body['marital_status'] ?? '', ['أعزب','متزوج','أرمل','مطلق'], true)
+                                    ? $body['marital_status'] : '';
+        $spouseName           = $s2('spouse_name');
+        $childrenCount        = isset($body['children_count']) && $body['children_count'] !== '' ? (int)$body['children_count'] : null;
+        $phone                = preg_replace('/[^\+0-9\-\s]/', '', trim($body['phone'] ?? ''));
+        $email                = strtolower(trim($body['email'] ?? ''));
+        $address              = $s2('address');
+        $district             = $s2('district') ?: '11';
+        $schoolYear           = $s2('school_year') ?: '2025 / 2026';
+        $schoolName           = $s2('school_name');
+        $yearsWorked          = isset($body['years_worked']) && $body['years_worked'] !== '' ? (int)$body['years_worked'] : 0;
+        $schoolEntry          = $body['school_entry_date']         ?? null;
+        $diploma              = $s2('diploma');
+        $firstAppointmentDate = $body['first_appointment_date']    ?? null;
+        $rank                 = $s2('rank');
+        $status               = $s2('status');
+        $echelon              = $s2('echelon');
+        $grade                = $s2('grade');
+        $executionDate        = $body['execution_date']            ?? null;
+        $latestInspDate       = $body['latest_inspection_date']    ?? null;
+        $latestInspScore      = isset($body['latest_inspection_score']) && $body['latest_inspection_score'] !== '' ? (int)$body['latest_inspection_score'] : null;
+        $lastInspDate         = $body['last_inspection_date']      ?? null;
+        $lastInspScore        = isset($body['last_inspection_score']) && $body['last_inspection_score'] !== '' ? (int)$body['last_inspection_score'] : null;
+        $previousYearClass    = $s2('previous_year_class');
+        $currentYearClass     = $s2('current_year_class');
+        $studentCount         = isset($body['student_count']) && $body['student_count'] !== '' ? (int)$body['student_count'] : null;
+        $haraka               = in_array($body['haraka'] ?? '', ['نعم','لا'], true) ? $body['haraka'] : null;
+        $techInstGradYear     = $s2('tech_institute_grad_year');
+        $uniGradYear          = $s2('university_grad_year');
+
+        // Validation
+        $errors = [];
+        if (mb_strlen($firstName)  < 2) $errors['first_name']     = 'الاسم الشخصي مطلوب (حرفان على الأقل)';
+        if (mb_strlen($familyName) < 2) $errors['family_name']    = 'الاسم العائلي مطلوب (حرفان على الأقل)';
+        if (!$gender)                   $errors['gender']          = 'الجنس مطلوب';
+        if (!$birthDate)                $errors['birth_date']      = 'تاريخ الميلاد مطلوب';
+        if (mb_strlen($birthPlace) < 2) $errors['birth_place']     = 'مكان الميلاد مطلوب';
+        if (mb_strlen($residence)  < 2) $errors['residence']       = 'مكان الإقامة مطلوب';
+        if (!$maritalStatus)            $errors['marital_status']  = 'الحالة المدنية مطلوبة';
+        if (!preg_match('/^0[56][0-9]{8}$/', $phone)) $errors['phone'] = 'رقم الهاتف غير صالح';
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'البريد الإلكتروني غير صالح';
+        } else {
+            $dup = $pdo->prepare('SELECT id FROM personal_info WHERE email = :e LIMIT 1');
+            $dup->execute([':e' => $email]);
+            if ($dup->fetch()) $errors['email'] = 'البريد الإلكتروني مستخدم بالفعل';
+        }
+        if (mb_strlen($address)  < 5) $errors['address']  = 'العنوان مطلوب';
+        if (mb_strlen($diploma)  < 2) $errors['diploma']  = 'الشهادة مطلوبة';
+        if (mb_strlen($schoolName) < 2) $errors['school_name'] = 'اسم المدرسة مطلوب';
+
+        if (!empty($errors)) authJsonResponse(false, 'بيانات غير صالحة', 422, ['errors' => $errors]);
+
+        // Valeur par défaut pour school_entry_date (NOT NULL dans le schéma)
+        $schoolEntry = $schoolEntry ?: date('Y-m-d');
+
+        $pdo->prepare(
+            "INSERT INTO personal_info
+                (district, school_year, school_name, years_worked,
+                 first_name, family_name, maiden_name,
+                 birth_date, birth_place, residence, gender,
+                 marital_status, spouse_name, children_count,
+                 phone, email, address,
+                 school_entry_date, diploma,
+                 first_appointment_date, rank, status, echelon, grade, execution_date,
+                 latest_inspection_date, latest_inspection_score,
+                 last_inspection_date, last_inspection_score,
+                 previous_year_class, current_year_class,
+                 student_count, haraka,
+                 tech_institute_grad_year, university_grad_year)
+             VALUES
+                (:di, :sy, :sname, :yw,
+                 :fn, :fam, :mn,
+                 :bd, :bp, :res, :gen,
+                 :ms, :sn, :cc,
+                 :ph, :em, :addr,
+                 :sed, :dip,
+                 :fad, :rnk, :stat, :ech, :grd, :exd,
+                 :lid, :lis,
+                 :laid, :lais,
+                 :pyc, :cyc,
+                 :sc, :hrk,
+                 :tigy, :ugy)"
+        )->execute([
+            ':di'   => $district,    ':sy'   => $schoolYear,  ':sname'=> $schoolName,
+            ':yw'   => $yearsWorked, ':fn'   => $firstName,   ':fam'  => $familyName,
+            ':mn'   => $maidenName ?: null,
+            ':bd'   => $birthDate,   ':bp'   => $birthPlace,  ':res'  => $residence,
+            ':gen'  => $gender,      ':ms'   => $maritalStatus,':sn'  => $spouseName ?: null,
+            ':cc'   => $childrenCount,':ph'  => $phone,        ':em'  => $email,
+            ':addr' => $address,     ':sed'  => $schoolEntry,  ':dip' => $diploma,
+            ':fad'  => $firstAppointmentDate ?: null,
+            ':rnk'  => $rank ?: null, ':stat' => $status ?: null, ':ech' => $echelon ?: null,
+            ':grd'  => $grade ?: null,':exd'  => $executionDate ?: null,
+            ':lid'  => $latestInspDate ?: null,  ':lis'  => $latestInspScore,
+            ':laid' => $lastInspDate ?: null,    ':lais' => $lastInspScore,
+            ':pyc'  => $previousYearClass ?: null, ':cyc' => $currentYearClass ?: null,
+            ':sc'   => $studentCount,  ':hrk'  => $haraka,
+            ':tigy' => $techInstGradYear ?: null, ':ugy'  => $uniGradYear ?: null,
+        ]);
+
+        authJsonResponse(true, 'تم إنشاء البطاقة بنجاح', 201, ['id' => (int)$pdo->lastInsertId()]);
+    }
     $id = (int)($body['id'] ?? 0);
     if (!$id) authJsonResponse(false, 'المعرف مطلوب', 400);
 

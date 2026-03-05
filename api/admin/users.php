@@ -12,7 +12,7 @@
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
@@ -49,6 +49,54 @@ try {
     $body = json_decode(file_get_contents('php://input'), true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         authJsonResponse(false, 'JSON غير صالح', 400);
+    }
+
+    // ── POST : création d'un utilisateur ──────────────────────────────────
+    if ($method === 'POST') {
+        $firstName = trim($body['first_name'] ?? '');
+        $lastName  = trim($body['last_name']  ?? '');
+        $email     = strtolower(trim($body['email']    ?? ''));
+        $username  = trim($body['username']   ?? '');
+        $password  = $body['password'] ?? '';
+        $role      = in_array($body['role'] ?? '', ['admin','user'], true) ? $body['role'] : 'user';
+
+        $errors = [];
+
+        if (mb_strlen($firstName) < 2) $errors['first_name'] = 'الاسم الشخصي مطلوب (حرفان على الأقل)';
+        if (mb_strlen($lastName)  < 2) $errors['last_name']  = 'اللقب مطلوب (حرفان على الأقل)';
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'البريد الإلكتروني غير صالح';
+        } else {
+            $dup = $pdo->prepare("SELECT id FROM users WHERE email = :e LIMIT 1");
+            $dup->execute([':e' => $email]);
+            if ($dup->fetch()) $errors['email'] = 'البريد الإلكتروني مستخدم بالفعل';
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9_\.]{3,30}$/', $username)) {
+            $errors['username'] = 'اسم المستخدم يجب أن يكون بين 3 و 30 حرفًا (أحرف لاتينية وأرقام و _ و . فقط)';
+        } else {
+            $dup2 = $pdo->prepare("SELECT id FROM users WHERE username = :u LIMIT 1");
+            $dup2->execute([':u' => $username]);
+            if ($dup2->fetch()) $errors['username'] = 'اسم المستخدم مستخدم بالفعل';
+        }
+
+        if (!preg_match('/^[\x21-\x7E]+$/', $password)) {
+            $errors['password'] = 'كلمة المرور تقبل فقط الأحرف اللاتينية والأرقام والرموز الخاصة';
+        } elseif (!preg_match('/^(?=.*[A-Z])(?=.*\d).{8,}$/', $password)) {
+            $errors['password'] = 'كلمة المرور: 8 أحرف على الأقل، حرف كبير ورقم';
+        }
+
+        if (!empty($errors)) authJsonResponse(false, 'بيانات غير صالحة', 422, ['errors' => $errors]);
+
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+        $pdo->prepare(
+            "INSERT INTO users (first_name, last_name, email, username, password_hash, role, is_active)
+             VALUES (:fn, :ln, :em, :un, :ph, :ro, 1)"
+        )->execute([':fn'=>$firstName, ':ln'=>$lastName, ':em'=>$email,
+                    ':un'=>$username, ':ph'=>$hash, ':ro'=>$role]);
+
+        authJsonResponse(true, 'تم إنشاء المستخدم بنجاح', 201);
     }
 
     $id = (int)($body['id'] ?? 0);

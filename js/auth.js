@@ -28,6 +28,13 @@ const Auth = (() => {
             }
 
             _currentUser = data.user;
+
+            // Redirect admin to the admin dashboard if they land on index.html
+            if (_currentUser.role === 'admin' && !window.location.pathname.endsWith('admin.html')) {
+                window.location.href = 'admin.html';
+                return;
+            }
+
             _renderUserBar(_currentUser);
             await _prefillFormFromDB();
 
