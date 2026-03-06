@@ -656,9 +656,10 @@ textarea::placeholder {
 .auth-options {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-bottom: 8px;
     margin-top: -8px;
+    gap: 8px;
 }
 
 .remember-label {

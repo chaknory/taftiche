@@ -14,15 +14,34 @@
     const tabRegister = document.getElementById('tabRegister');
     const panelLogin  = document.getElementById('panelLogin');
     const panelRegister = document.getElementById('panelRegister');
+    const panelForgot = document.getElementById('panelForgot');
 
     function switchTab(tab) {
-        const isLogin = (tab === 'login');
+        const isLogin    = (tab === 'login');
+        const isRegister = (tab === 'register');
+        const isForgot   = (tab === 'forgot');
+
         tabLogin.classList.toggle('active', isLogin);
-        tabRegister.classList.toggle('active', !isLogin);
-        tabLogin.setAttribute('aria-selected', isLogin ? 'true' : 'false');
-        tabRegister.setAttribute('aria-selected', isLogin ? 'false' : 'true');
-        panelLogin.style.display    = isLogin ? '' : 'none';
-        panelRegister.style.display = isLogin ? 'none' : '';
+        tabRegister.classList.toggle('active', isRegister);
+        tabLogin.setAttribute('aria-selected',    isLogin    ? 'true' : 'false');
+        tabRegister.setAttribute('aria-selected', isRegister ? 'true' : 'false');
+
+        panelLogin.style.display    = isLogin    ? '' : 'none';
+        panelRegister.style.display = isRegister ? '' : 'none';
+        panelForgot.style.display   = isForgot   ? '' : 'none';
+
+        // Masquer les onglets quand on est sur le panneau « mot de passe oublié »
+        const tabBar = document.querySelector('.auth-tabs');
+        if (tabBar) tabBar.style.display = isForgot ? 'none' : '';
+
+        // Adapter le sous-titre
+        const subtitle = document.getElementById('formSubtitle');
+        if (subtitle) {
+            subtitle.textContent = isForgot
+                ? 'إعادة تعيين كلمة المرور'
+                : 'الرجاء إدخال بيانات الدخول للمتابعة';
+        }
+
         alertEl.style.display = 'none';
     }
 
@@ -262,6 +281,76 @@
             .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('error'); });
         ['firstNameError','lastNameError','regEmailError','regUsernameError','regPasswordError','regConfirmError']
             .forEach(id => { const el = document.getElementById(id); if (el) el.textContent = ''; });
+        alertEl.style.display = 'none';
+    }
+
+    // ── Mot de passe oublié ───────────────────────────────────────────────
+    const forgotForm   = document.getElementById('forgotForm');
+    const forgotEmail  = document.getElementById('forgotEmail');
+    const forgotBtn    = document.getElementById('forgotBtn');
+    const fBtnText     = forgotBtn.querySelector('.btn-text');
+    const fBtnSpinner  = forgotBtn.querySelector('.btn-spinner');
+    const btnForgot    = document.getElementById('btnForgot');
+    const btnBackLogin = document.getElementById('btnBackToLogin');
+
+    btnForgot.addEventListener('click',    () => switchTab('forgot'));
+    btnBackLogin.addEventListener('click', () => switchTab('login'));
+
+    forgotForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearForgotErrors();
+
+        const email = (forgotEmail.value || '').trim();
+        if (!email) {
+            setForgotError('البريد الإلكتروني مطلوب');
+            return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            setForgotError('يرجى إدخال بريد إلكتروني صحيح');
+            return;
+        }
+
+        setForgotLoading(true);
+
+        try {
+            const res  = await fetch('api/auth/forgot_password.php', {
+                method:      'POST',
+                credentials: 'same-origin',
+                headers:     { 'Content-Type': 'application/json' },
+                body:        JSON.stringify({ email }),
+            });
+
+            const data = await res.json();
+
+            // On affiche toujours le message générique (anti-énumération)
+            showAlert('success', data.message || 'إذا كان البريد مسجلًا، ستتلقى رسالة تحتوي على رابط إعادة التعيين.');
+            forgotForm.reset();
+
+        } catch (err) {
+            showAlert('error', 'تعذّر الاتصال بالخادم، يرجى التحقق من الاتصال');
+        } finally {
+            setForgotLoading(false);
+        }
+    });
+
+    function setForgotLoading(on) {
+        forgotBtn.disabled       = on;
+        fBtnText.style.display   = on ? 'none' : '';
+        fBtnSpinner.style.display = on ? ''    : 'none';
+    }
+
+    function setForgotError(msg) {
+        const grp = document.getElementById('grpForgotEmail');
+        const err = document.getElementById('forgotEmailError');
+        if (grp) grp.classList.add('error');
+        if (err) err.textContent = msg;
+    }
+
+    function clearForgotErrors() {
+        const grp = document.getElementById('grpForgotEmail');
+        const err = document.getElementById('forgotEmailError');
+        if (grp) grp.classList.remove('error');
+        if (err) err.textContent = '';
         alertEl.style.display = 'none';
     }
 })();

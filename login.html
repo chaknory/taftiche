@@ -107,6 +107,12 @@
                     <span class="remember-custom"></span>
                     <span>تذكرني لمدة 30 يومًا</span>
                 </label>
+                <button type="button" class="forgot-link" id="btnForgot"
+                        style="background:none;border:none;cursor:pointer;color:#1a3a5c;
+                               font-size:13px;font-family:inherit;padding:0;text-decoration:underline;
+                               white-space:nowrap">
+                    نسيت كلمة المرور؟
+                </button>
             </div>
 
             <!-- Bouton -->
@@ -222,6 +228,42 @@
 
         </form>
         </div><!-- /panelRegister -->
+
+        <!-- Panneau : Mot de passe oublié -->
+        <div id="panelForgot" role="tabpanel" style="display:none">
+        <form id="forgotForm" novalidate autocomplete="off">
+
+            <p style="color:#555;font-size:14px;line-height:1.7;margin:0 0 20px">
+                أدخل بريدك الإلكتروني وسنرسل لك رابطًا لإعادة تعيين كلمة المرور.
+            </p>
+
+            <div class="form-group" id="grpForgotEmail">
+                <label for="forgotEmail">
+                    <span class="label-text">البريد الإلكتروني</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="email" id="forgotEmail" name="email" required
+                       autocomplete="email" placeholder="example@education.dz">
+                <span class="error-message" id="forgotEmailError"></span>
+            </div>
+
+            <div class="form-actions" style="margin-top: 24px;">
+                <button type="submit" class="btn btn-submit" id="forgotBtn">
+                    <span class="btn-text">إرسال رابط الإعادة</span>
+                    <span class="spinner btn-spinner" style="display:none"></span>
+                </button>
+            </div>
+
+            <div style="text-align:center;margin-top:16px">
+                <button type="button" id="btnBackToLogin"
+                        style="background:none;border:none;cursor:pointer;color:#1a3a5c;
+                               font-size:13px;font-family:inherit;padding:0;text-decoration:underline">
+                    ← العودة إلى تسجيل الدخول
+                </button>
+            </div>
+
+        </form>
+        </div><!-- /panelForgot -->
 
     </div>
 
