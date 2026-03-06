@@ -38,7 +38,7 @@ function getAuthConnection(): PDO
         return $pdo;
     }
 
-    // Si la base existait déjà, s'assure que la table users existe
+    // Si la base existait déjà, s'assure que toutes les tables existent
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS users (
             id                  INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,6 +64,13 @@ function getAuthConnection(): PDO
     $pdo->exec("CREATE INDEX IF NOT EXISTS idx_users_email    ON users(email);");
     $pdo->exec("CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);");
     $pdo->exec("CREATE INDEX IF NOT EXISTS idx_users_remember ON users(remember_token);");
+
+    // Tables inspections / evaluations / observations
+    $migration = file_get_contents(__DIR__ . '/../../database/migrate_add_inspections.sql');
+    $noComments = preg_replace('/--[^\n]*/', '', $migration);
+    foreach (array_filter(array_map('trim', explode(';', $noComments))) as $st) {
+        try { $pdo->exec($st); } catch (PDOException $e) { /* déjà existant */ }
+    }
 
     return $pdo;
 }

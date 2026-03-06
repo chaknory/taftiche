@@ -1,0 +1,151 @@
+
+✅ 1. Modèle conceptuel (toutes les rubriques du rapport)
+Voici les catégories d’information présentes dans le document :
+A. Informations institutionnelles
+
+Ministère
+Direction / Inspection
+Année scolaire
+Zone / Circonscription
+Établissement scolaire
+Niveau (classe / cycle)
+
+B. Identité de l’enseignant/e
+
+Nom & prénom (champ texte libre)
+Date de naissance
+Date de recrutement
+Grade / Poste
+Situation administrative (ex : titulaire / stagiaire)
+Diplôme + Spécialité
+Date d’obtention du diplôme
+Note ou mention éventuelle
+
+C. Séance inspectée
+
+Date de la visite
+Heure
+Classe / Niveau
+Effectif réel
+Discipline
+Leçon observée
+Page(s) de la leçon dans le manuel
+
+D. Observations pédagogiques
+
+Déroulement de la leçon
+Maîtrise du contenu
+Stratégies pédagogiques
+Activités des élèves
+Gestion du temps
+Gestion de classe
+Moyens didactiques utilisés
+
+E. Appréciation de l’inspecteur
+
+Points forts
+Points à améliorer
+Recommandations
+Note / Évaluation finale
+
+F. Signature
+
+Nom / fonction de l’inspecteur (champ générique, non identifié)
+Date de signature
+
+
+CREATE TABLE enseignants (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  nom_complet VARCHAR(255),
+  date_naissance DATE,
+  date_recrutement DATE,
+  poste VARCHAR(100),
+  situation VARCHAR(100),
+  diplome VARCHAR(255),
+  specialite VARCHAR(255),
+  date_obtention_diplome DATE
+);
+
+CREATE TABLE evaluations (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  inspection_id INT,
+  points_forts TEXT,
+  points_faibles TEXT,
+  recommandations TEXT,
+  note_finale VARCHAR(20),
+  FOREIGN KEY (inspection_id) REFERENCES inspections(id)
+);
+
+CREATE TABLE observations (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  inspection_id INT,
+  comportement_professionnel TEXT,
+  respect_instructions TEXT,
+  preparation_pedagogique TEXT,
+  strategie_enseignement TEXT,
+  participation_eleves TEXT,
+  gestion_classe TEXT,
+  maitrise_contenu TEXT,
+  moyens_didactiques TEXT,
+  remarques_supplementaires TEXT,
+  FOREIGN KEY (inspection_id) REFERENCES inspections(id)
+);
+
+
+
+Proposition de modèle JSON (pour API ou base NoSQL)
+
+{
+  "rapportInspection": {
+    "institution": {
+      "ministere": "string",
+      "direction": "string",
+      "inspection": "string",
+      "anneeScolaire": "string",
+      "etablissement": "string",
+      "circonscription": "string"
+    },
+    "enseignant": {
+      "nomComplet": "string",
+      "dateNaissance": "string",
+      "dateRecrutement": "string",
+      "poste": "string",
+      "situation": "string",
+      "diplome": {
+        "intitule": "string",
+        "specialite": "string",
+        "dateObtention": "string"
+      }
+    },
+    "seance": {
+      "date": "string",
+      "heure": "string",
+      "niveau": "string",
+      "effectif": "number",
+      "discipline": "string",
+      "lecon": "string",
+      "pagesManuel": "string"
+    },
+    "observations": {
+      "comportementProfessionnel": "string",
+      "respectInstructions": "string",
+      "preparationPedagogique": "string",
+      "strategieEnseignement": "string",
+      "participationEleves": "string",
+      "gestionClasse": "string",
+      "maitriseContenu": "string",
+      "moyensDidactiques": "string",
+      "remarquesSupplementaires": "string"
+    },
+    "evaluation": {
+      "pointsForts": "string",
+      "pointsFaibles": "string",
+      "recommandations": "string",
+      "noteFinale": "string"
+    },
+    "signature": {
+      "inspecteur": "string",
+      "date": "string"
+    }
+  }
+}

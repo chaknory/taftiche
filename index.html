@@ -10,12 +10,13 @@
 <body>
     <div class="form-container">
         <div class="form-header">
+            <!--
             <div class="logo-placeholder">
                 <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
                     <circle cx="24" cy="24" r="22" stroke="#1a3a5c" stroke-width="2"/>
                     <path d="M24 12v24M12 24h24" stroke="#1a3a5c" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-            </div>
+            </div>-->
             <div class="institution-header">
                 <p class="institution-top">مديرية التربية لولاية بسكرة</p>
                 <p class="institution-sub">مفتشية التعليم الإبتدائي</p>
@@ -439,13 +440,13 @@
                     <label for="echelon">
                         <span class="label-text">السلم</span>
                     </label>
-                    <input
-                        type="text"
-                        id="echelon"
-                        name="echelon"
-                        placeholder="أدخل السلم"
-                        maxlength="50"
-                    >
+                    <select id="echelon" name="echelon">
+                        <option value="">-- اختر السلم --</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                    </select>
                     <span class="error-message" id="echelonError"></span>
                 </div>
                 <div class="form-group">
