@@ -39,11 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Database Configuration
 // ==========================================
 
-// Chemin vers le fichier SQLite (un niveau au-dessus du dossier api/)
-define('DB_PATH', __DIR__ . '/../database/personal_info.sqlite');
-
-// Chemin vers le schéma SQL pour l'initialisation automatique
-define('DB_SCHEMA', __DIR__ . '/../database/schema.sql');
+// Le pilote (sqlite / mysql) et les identifiants sont centralisés dans config.php.
+// Modifiez DB_DRIVER dans ce fichier pour basculer entre les deux environnements.
+require_once __DIR__ . '/config.php';
 
 // ==========================================
 // Session — identify connected user
@@ -290,27 +288,9 @@ function recordExistsForEmail($email) {
     return (int)$stmt->fetchColumn() > 0;
 }
 
-function getConnection() {
-    $dbPath   = DB_PATH;
-    $isNew    = !file_exists($dbPath);
-
-    $pdo = new PDO('sqlite:' . $dbPath, null, null, [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    ]);
-
-    // Optimisations SQLite recommandées
-    $pdo->exec('PRAGMA journal_mode = WAL;');
-    $pdo->exec('PRAGMA foreign_keys = ON;');
-    $pdo->exec('PRAGMA synchronous   = NORMAL;');
-
-    // Initialisation automatique du schéma si la base est nouvelle
-    if ($isNew) {
-        $schema = file_get_contents(DB_SCHEMA);
-        $pdo->exec($schema);
-    }
-
-    return $pdo;
+function getConnection(): PDO {
+    // Délègue à db_connect() défini dans config.php (SQLite ou MySQL)
+    return db_connect();
 }
 
 function saveToDatabase($data) {
@@ -339,7 +319,8 @@ function saveToDatabase($data) {
              :previous_year_class, :current_year_class,
              :student_count, :haraka, :children_count,
              :tech_institute_grad_year, :university_grad_year,
-             datetime('now'))";
+             " . db_now() . ")"
+    ;
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
@@ -421,8 +402,9 @@ function updateInDatabase($data, $email) {
             children_count = :children_count,
             tech_institute_grad_year = :tech_institute_grad_year,
             university_grad_year = :university_grad_year,
-            updated_at = datetime('now')
-        WHERE email = :email";
+            updated_at = " . db_now() . "
+        WHERE email = :email"
+    ;
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([

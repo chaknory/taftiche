@@ -1,40 +1,49 @@
 <?php
 /**
- * Connexion partagée à la base de données SQLite
- * Utilisée par tous les endpoints d'authentification.
- *
- * - Crée le fichier DB s'il n'existe pas
- * - Applique le schéma complet (personal_info + users)
- * - Crée la table `users` séparément si la DB existait déjà
+ * Connexion partagée à la base de données.
+ * Supporte SQLite (local) et MySQL (production).
+ * Le pilote actif est défini dans api/config.php (constante DB_DRIVER).
  */
 
-define('AUTH_DB_PATH',    __DIR__ . '/../../database/personal_info.sqlite');
-define('AUTH_DB_SCHEMA',  __DIR__ . '/../../database/schema.sql');
+require_once __DIR__ . '/../config.php';
 
 // Durée max de verrouillage après trop d'échecs (minutes)
 define('LOCK_DURATION_MINUTES', 15);
 // Nombre d'échecs avant verrouillage
 define('MAX_FAILED_ATTEMPTS', 5);
-// Durée du cookie "tذكرني" (jours)
+// Durée du cookie "تذكرني" (jours)
 define('REMEMBER_COOKIE_DAYS', 30);
 
+/**
+ * Retourne la connexion PDO partagée.
+ * Pour SQLite : crée et initialise la base si elle n'existe pas encore.
+ * Pour MySQL  : se connecte au serveur configuré dans config.php.
+ */
 function getAuthConnection(): PDO
 {
-    $isNew = !file_exists(AUTH_DB_PATH);
+    static $pdo = null;
+    if ($pdo !== null) {
+        return $pdo;
+    }
 
-    $pdo = new PDO('sqlite:' . AUTH_DB_PATH, null, null, [
+    if (DB_DRIVER === 'mysql') {
+        $pdo = db_connect();
+        return $pdo;
+    }
+
+    // ── SQLite ────────────────────────────────────────────────────────────────
+    $isNew = !file_exists(DB_SQLITE_PATH);
+    $pdo   = new PDO('sqlite:' . DB_SQLITE_PATH, null, null, [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
-
     $pdo->exec('PRAGMA journal_mode = WAL;');
     $pdo->exec('PRAGMA foreign_keys = ON;');
     $pdo->exec('PRAGMA synchronous   = NORMAL;');
 
     // Si la base est toute nouvelle, applique le schéma complet
     if ($isNew) {
-        $schema = file_get_contents(AUTH_DB_SCHEMA);
-        $pdo->exec($schema);
+        $pdo->exec(file_get_contents(DB_SCHEMA_SQLITE));
         return $pdo;
     }
 
@@ -66,7 +75,7 @@ function getAuthConnection(): PDO
     $pdo->exec("CREATE INDEX IF NOT EXISTS idx_users_remember ON users(remember_token);");
 
     // Tables inspections / evaluations / observations
-    $migration = file_get_contents(__DIR__ . '/../../database/migrate_add_inspections.sql');
+    $migration  = file_get_contents(__DIR__ . '/../../database/migrate_add_inspections.sql');
     $noComments = preg_replace('/--[^\n]*/', '', $migration);
     foreach (array_filter(array_map('trim', explode(';', $noComments))) as $st) {
         try { $pdo->exec($st); } catch (PDOException $e) { /* déjà existant */ }
