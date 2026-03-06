@@ -360,6 +360,21 @@ textarea::placeholder {
 }
 
 /* ========================================
+   Form Section Titles
+   ======================================== */
+.form-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 28px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent-color);
+    letter-spacing: 0.3px;
+}
+
+.form-section-title:first-child { margin-top: 0; }
+
+/* ========================================
    Buttons
    ======================================== */
 .form-actions {
@@ -772,7 +787,7 @@ textarea::placeholder {
 }
 
 /* ========================================
-   Timetable
+   Timetable – Accordion
    ======================================== */
 .timetable-section {
     margin-top: 28px;
@@ -781,32 +796,76 @@ textarea::placeholder {
     overflow: hidden;
 }
 
-.timetable-header {
+/* Toggle button (replaces old header) */
+.timetable-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     background: var(--primary-color);
     color: #fff;
-    padding: 10px 16px;
-    text-align: center;
+    padding: 12px 18px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-family);
+    transition: background .2s ease;
+    text-align: right;
+}
+
+.timetable-toggle:hover {
+    background: var(--primary-dark);
+}
+
+.timetable-toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.timetable-toggle-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: .85;
+    font-size: .82rem;
 }
 
 .timetable-title {
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
+    letter-spacing: 0.4px;
 }
 
-.timetable-meta {
-    font-size: 0.82rem;
-    opacity: 0.88;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+.timetable-meta-text {
+    font-size: .8rem;
+    opacity: .9;
+    white-space: nowrap;
 }
 
-.timetable-meta-sep {
-    opacity: 0.5;
+/* Chevron rotation */
+.tt-chevron {
+    flex-shrink: 0;
+    transition: transform .35s cubic-bezier(.4,0,.2,1);
+}
+
+.timetable-toggle[aria-expanded="true"] .tt-chevron {
+    transform: rotate(180deg);
+}
+
+/* Collapsible body */
+.timetable-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .35s cubic-bezier(.4,0,.2,1);
+}
+
+.timetable-body.open {
+    grid-template-rows: 1fr;
+}
+
+.timetable-body > .timetable-wrapper {
+    overflow: hidden;
 }
 
 .timetable-wrapper {

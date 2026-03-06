@@ -27,7 +27,9 @@
 
         <form id="personalInfoForm" novalidate>
 
-            <!-- المقاطعة والسنة الدراسية -->
+            <!-- ═══ المعلومات المدرسية ═══ -->
+            <h2 class="form-section-title">المعلومات المدرسية</h2>
+
             <div class="form-row">
                 <div class="form-group form-group-grow">
                     <label for="district">
@@ -103,23 +105,8 @@
                 </div>
             </div>
 
-            <!-- مكان الإقامة -->
-            <div class="form-group">
-                <label for="residence">
-                    <span class="label-text">مكان الإقامة </span>
-                    <span class="required">*</span>
-                </label>
-                <input
-                    type="text"
-                    id="residence"
-                    name="residence"
-                    placeholder="أدخل مكان الإقامة"
-                    required
-                    minlength="2"
-                    maxlength="100"
-                >
-                <span class="error-message" id="residenceError"></span>
-            </div>
+            <!-- ═══ المعلومات الشخصية ═══ -->
+            <h2 class="form-section-title">المعلومات الشخصية</h2>
 
             <!-- الجنس -->
             <div class="form-group">
@@ -222,7 +209,25 @@
                     <span class="error-message" id="birthPlaceError"></span>
                 </div>
             </div>
-            
+
+            <!-- مكان الإقامة -->
+            <div class="form-group">
+                <label for="residence">
+                    <span class="label-text">مكان الإقامة</span>
+                    <span class="required">*</span>
+                </label>
+                <input
+                    type="text"
+                    id="residence"
+                    name="residence"
+                    placeholder="أدخل مكان الإقامة"
+                    required
+                    minlength="2"
+                    maxlength="100"
+                >
+                <span class="error-message" id="residenceError"></span>
+            </div>
+
             <!-- الحالة المدنية -->
             <div class="form-group" id="civil" style="display:none;">
                 <label>
@@ -289,6 +294,8 @@
                 <span class="error-message" id="spouseNameError"></span>
             </div>
 
+            <!-- ═══ معلومات الاتصال ═══ -->
+            <h2 class="form-section-title">معلومات الاتصال</h2>
 
             <!-- رقم الهاتف -->
             <div class="form-group">
@@ -328,29 +335,6 @@
                 <span class="error-message" id="emailError"></span>
             </div>
 
-            <!-- سنة التخرج -->
-            <div class="form-row">
-                <div class="form-group form-group-grow">
-                    <label for="techInstituteGradYear">
-                        <span class="label-text">سنة التخرج من المعهد التكنولوجي</span>
-                    </label>
-                    <select id="techInstituteGradYear" name="tech_institute_grad_year" class="ltr-input">
-                        <option value="">-- اختر السنة --</option>
-                    </select>
-                    <span class="error-message" id="techInstituteGradYearError"></span>
-                </div>
-                <div class="form-group form-group-grow">
-                    <label for="universityGradYear">
-                        <span class="label-text">سنة التخرج من الجامعة</span>
-                    </label>
-                    <select id="universityGradYear" name="university_grad_year" class="ltr-input">
-                        <option value="">-- اختر السنة --</option>
-                    </select>
-                    <span class="error-message" id="universityGradYearError"></span>
-                </div>
-            </div>
-
-
             <!-- العنوان -->
             <div class="form-group">
                 <label for="address">
@@ -368,6 +352,9 @@
                 >
                 <span class="error-message" id="addressError"></span>
             </div>
+
+            <!-- ═══ المسار المهني ═══ -->
+            <h2 class="form-section-title">المسار المهني</h2>
 
             <!-- الشهادة / الدبلوم المحصل عليه -->
             <div class="form-group">
@@ -387,7 +374,7 @@
                 <span class="error-message" id="diplomaError"></span>
             </div>
 
-            <!-- تاريخ التعيين، الرتبة، الصفة -->
+            <!-- تاريخ التعيين -->
             <div class="form-row">
                 <div class="form-group form-group-grow">
                     <label for="firstAppointmentDate">
@@ -433,8 +420,7 @@
                 </div>
             </div>
 
-
-              <!-- السلم والدرجة وتاريخ التنفيذ -->
+            <!-- السلم والدرجة وتاريخ التنفيذ -->
             <div class="form-row form-row-thirds">
                 <div class="form-group">
                     <label for="echelon">
@@ -482,6 +468,9 @@
                     <span class="error-message" id="executionDateError"></span>
                 </div>
             </div>
+
+            <!-- ═══ التفتيش ═══ -->
+            <h2 class="form-section-title">التفتيش</h2>
 
             <!-- تاريخ آخر تفتيش وعلامته -->
             <div class="form-row">
@@ -544,6 +533,9 @@
                     <span class="error-message" id="lastInspectionScoreError"></span>
                 </div>
             </div>
+
+            <!-- ═══ الفصل الدراسي ═══ -->
+            <h2 class="form-section-title">الفصل الدراسي</h2>
 
             <!-- القسم المُسند -->
             <div class="form-row">
@@ -619,14 +611,17 @@
 
             <!-- التوزيع الأسبوعي -->
             <div class="timetable-section">
-                <div class="timetable-header">
-                    <div class="timetable-title">التوزيع الأسبوعي</div>
-                    <div class="timetable-meta">
-                        <span>الفترة الصباحية: 4 حصص</span>
-                        <span class="timetable-meta-sep">|</span>
-                        <span>الفترة المسائية: 3 حصص</span>
+                <button type="button" class="timetable-toggle" id="timetableToggle" aria-expanded="false" aria-controls="timetableBody">
+                    <div class="timetable-toggle-left">
+                        <svg class="tt-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <span class="timetable-title">التوزيع الأسبوعي</span>
                     </div>
-                </div>
+                    <div class="timetable-toggle-right">
+                        <span class="timetable-meta-text">الصباح: 4 حصص&nbsp;&nbsp;|&nbsp;&nbsp;المساء: 3 حصص</span>
+                        <svg class="tt-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                </button>
+                <div class="timetable-body" id="timetableBody">
                 <div class="timetable-wrapper">
                     <table class="timetable">
                         <thead>
@@ -696,6 +691,32 @@
                         </tbody>
                     </table>
                 </div>
+                </div><!-- /timetable-body -->
+            </div>
+
+            <!-- ═══ التأهيل ═══ -->
+            <h2 class="form-section-title">التأهيل</h2>
+
+            <!-- سنة التخرج -->
+            <div class="form-row">
+                <div class="form-group form-group-grow">
+                    <label for="techInstituteGradYear">
+                        <span class="label-text">سنة التخرج من المعهد التكنولوجي</span>
+                    </label>
+                    <select id="techInstituteGradYear" name="tech_institute_grad_year" class="ltr-input">
+                        <option value="">-- اختر السنة --</option>
+                    </select>
+                    <span class="error-message" id="techInstituteGradYearError"></span>
+                </div>
+                <div class="form-group form-group-grow">
+                    <label for="universityGradYear">
+                        <span class="label-text">سنة التخرج من الجامعة</span>
+                    </label>
+                    <select id="universityGradYear" name="university_grad_year" class="ltr-input">
+                        <option value="">-- اختر السنة --</option>
+                    </select>
+                    <span class="error-message" id="universityGradYearError"></span>
+                </div>
             </div>
 
             <!-- أزرار -->
@@ -741,5 +762,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/app.js"></script>
+    <script>
+        (function () {
+            var btn  = document.getElementById('timetableToggle');
+            var body = document.getElementById('timetableBody');
+            btn.addEventListener('click', function () {
+                var open = body.classList.toggle('open');
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+        })();
+    </script>
 </body>
 </html>
