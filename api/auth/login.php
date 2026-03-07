@@ -98,7 +98,7 @@ try {
     // Mise à jour : réinitialiser les tentatives, enregistrer last_login
     $upd = $pdo->prepare(
         "UPDATE users SET failed_attempts = 0, locked_until = NULL,
-                          last_login = datetime('now') WHERE id = :id"
+                          last_login = " . db_now() . " WHERE id = :id"
     );
     $upd->execute([':id' => $user['id']]);
 

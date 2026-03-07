@@ -43,7 +43,7 @@ if (!empty($_COOKIE['remember_token'])) {
         if ($user) {
             // Rotation du token (sécurité)
             $newToken = bin2hex(random_bytes(32));
-            $pdo->prepare("UPDATE users SET remember_token = :t, last_login = datetime('now') WHERE id = :id")
+            $pdo->prepare("UPDATE users SET remember_token = :t, last_login = " . db_now() . " WHERE id = :id")
                 ->execute([':t' => hash('sha256', $newToken), ':id' => $user['id']]);
 
             setcookie('remember_token', $newToken, [

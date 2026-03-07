@@ -62,7 +62,7 @@ try {
     $stmt = $pdo->prepare(
         "SELECT id FROM users
           WHERE reset_token         = :t
-            AND reset_token_expires > datetime('now')
+            AND reset_token_expires > " . db_now() . "
             AND is_active           = 1
           LIMIT 1"
     );
