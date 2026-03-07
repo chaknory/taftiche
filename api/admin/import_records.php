@@ -84,7 +84,7 @@ $colMap = [
     'الشهادة'                     => 'diploma',
     'تاريخ التعيين الأول'         => 'first_appointment_date',
     'تاريخ_التعيين_الأول'         => 'first_appointment_date',
-    'الرتبة'                      => 'rank',
+    'الرتبة'                      => 'job_rank',
     'الوضعية الإدارية'            => 'status',
     'الوضعية_الإدارية'            => 'status',
     'السلم'                       => 'echelon',
@@ -165,7 +165,7 @@ try {
              marital_status, spouse_name, children_count,
              phone, email, address,
              school_entry_date, diploma,
-             first_appointment_date, rank, status, echelon, grade, execution_date,
+             first_appointment_date, job_rank, status, echelon, grade, execution_date,
              latest_inspection_date, latest_inspection_score,
              last_inspection_date, last_inspection_score,
              previous_year_class, current_year_class,
@@ -220,7 +220,7 @@ try {
         $schoolEntry = normalizeDate($row['school_entry_date'] ?? null) ?? date('Y-m-d');
         $diploma     = sanitizeStr($row['diploma']      ?? '');
         $firstAppDate   = normalizeDate($row['first_appointment_date'] ?? null);
-        $rank           = sanitizeStr($row['rank']      ?? '');
+        $rank           = sanitizeStr($row['job_rank']     ?? '');
         $rstatus        = sanitizeStr($row['status']    ?? '');
         $echelon        = sanitizeStr($row['echelon']   ?? '');
         $grade          = sanitizeStr($row['grade']     ?? '');

@@ -7,8 +7,10 @@
 -- تاريخ أول تعيين بالتعليم
 ALTER TABLE personal_info ADD COLUMN first_appointment_date TEXT;
 
--- الرتبة
-ALTER TABLE personal_info ADD COLUMN rank TEXT;
+-- الرتبة : renommer l'ancienne colonne rank → job_rank (bases existantes)
+ALTER TABLE personal_info RENAME COLUMN rank TO job_rank;
+-- si la colonne n'existait pas encore, l'ajouter
+ALTER TABLE personal_info ADD COLUMN job_rank TEXT;
 
 -- الصفة
 ALTER TABLE personal_info ADD COLUMN status TEXT;

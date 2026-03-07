@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS personal_info (
     school_entry_date   TEXT    NOT NULL,                                        -- تاريخ الدخول المدرسي (YYYY-MM-DD)
     diploma             TEXT    NOT NULL,                                        -- الشهادة / الدبلوم
     first_appointment_date TEXT,                                                 -- تاريخ أول تعيين بالتعليم
-    rank                TEXT,                                                    -- الرتبة
+    job_rank            TEXT,                                                    -- الرتبة
     status              TEXT,                                                    -- الصفة
     echelon             TEXT,                                                    -- السلم
     grade               TEXT,                                                    -- الدرجة

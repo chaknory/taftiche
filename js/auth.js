@@ -130,7 +130,7 @@ const Auth = (() => {
 
             // ── 2. Select ─────────────────────────────────────────────────
             setSelect('schoolName',            d.school_name);
-            setSelect('rank',                  d.rank);
+            setSelect('job_rank',                  d.job_rank);
             setSelect('status',                d.status);
             setSelect('grade',                 d.grade);
             setSelect('previousYearClass',     d.previous_year_class);

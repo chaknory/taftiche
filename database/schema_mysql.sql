@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `personal_info` (
     `school_entry_date`     DATE            NOT NULL                     COMMENT 'تاريخ الدخول المدرسي',
     `diploma`               VARCHAR(150)    NOT NULL                     COMMENT 'الشهادة / الدبلوم',
     `first_appointment_date` DATE           DEFAULT NULL                 COMMENT 'تاريخ أول تعيين',
-    `rank`                  VARCHAR(100)    DEFAULT NULL                 COMMENT 'الرتبة',
+    `job_rank`              VARCHAR(100)    DEFAULT NULL                 COMMENT 'الرتبة',
     `status`                VARCHAR(100)    DEFAULT NULL                 COMMENT 'الصفة',
     `echelon`               VARCHAR(50)     DEFAULT NULL                 COMMENT 'السلم',
     `grade`                 VARCHAR(50)     DEFAULT NULL                 COMMENT 'الدرجة',

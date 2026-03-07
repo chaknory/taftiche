@@ -40,7 +40,7 @@ try {
                     phone, email, address,
                     district, school_year, school_name, years_worked,
                     school_entry_date, diploma,
-                    first_appointment_date, rank, status, echelon, grade, execution_date,
+                    first_appointment_date, job_rank, status, echelon, grade, execution_date,
                     latest_inspection_date, latest_inspection_score,
                     last_inspection_date, last_inspection_score,
                     previous_year_class, current_year_class,
@@ -83,7 +83,7 @@ try {
         $schoolEntry          = $body['school_entry_date']         ?? null;
         $diploma              = $s2('diploma');
         $firstAppointmentDate = $body['first_appointment_date']    ?? null;
-        $rank                 = $s2('rank');
+        $rank                 = $s2('job_rank');
         $status               = $s2('status');
         $echelon              = $s2('echelon');
         $grade                = $s2('grade');
@@ -133,7 +133,7 @@ try {
                  marital_status, spouse_name, children_count,
                  phone, email, address,
                  school_entry_date, diploma,
-                 first_appointment_date, rank, status, echelon, grade, execution_date,
+                 first_appointment_date, job_rank, status, echelon, grade, execution_date,
                  latest_inspection_date, latest_inspection_score,
                  last_inspection_date, last_inspection_score,
                  previous_year_class, current_year_class,
@@ -213,7 +213,7 @@ try {
         $schoolEntry          = $body['school_entry_date']   ?? $rec['school_entry_date'];
         $diploma              = $s('diploma');
         $firstAppointmentDate = $body['first_appointment_date'] ?? $rec['first_appointment_date'];
-        $rank                 = $s('rank');
+        $rank                 = $s('job_rank');
         $status               = $s('status');
         $echelon              = $s('echelon');
         $grade                = $s('grade');
@@ -250,7 +250,7 @@ try {
                 phone=:ph, email=:em, address=:addr,
                 district=:di, school_year=:sy, school_name=:sname,
                 years_worked=:yw, school_entry_date=:sed, diploma=:dip,
-                first_appointment_date=:fad, rank=:rnk, status=:stat,
+                first_appointment_date=:fad, job_rank=:rnk, status=:stat,
                 echelon=:ech, grade=:grd, execution_date=:exd,
                 latest_inspection_date=:lid, latest_inspection_score=:lis,
                 last_inspection_date=:laid, last_inspection_score=:lais,

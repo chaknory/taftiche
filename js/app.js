@@ -30,7 +30,7 @@ const CONFIG = {
         techInstituteGradYear: 'السنة المختارة غير صحيحة',
         universityGradYear: 'السنة المختارة غير صحيحة',
         firstAppointmentDate: 'يرجى اختيار تاريخ أول تعيين بالتعليم',
-        rank: 'يرجى إدخال الرتبة (2 أحرف على الأقل)',
+        job_rank: 'يرجى إدخال الرتبة (2 أحرف على الأقل)',
         status: 'يرجى إدخال الصفة (2 أحرف على الأقل)',
         studentCount: 'يرجى إدخال عدد التلاميذ (بين 1 و 200)',
         haraka: 'يرجى تحديد ما إذا كنت معنيًا بالحركة',
@@ -155,7 +155,7 @@ const validators = {
         return !isNaN(date.getTime());
     },
 
-    rank(value) {
+    job_rank(value) {
          return true; // champ optionnel
     },
 
@@ -240,7 +240,7 @@ function validateField(fieldName) {
         techInstituteGradYear: { element: 'techInstituteGradYear', errorId: 'techInstituteGradYearError' },
         universityGradYear: { element: 'universityGradYear', errorId: 'universityGradYearError' },
         firstAppointmentDate: { element: 'firstAppointmentDate', errorId: 'firstAppointmentDateError' },
-        rank: { element: 'rank', errorId: 'rankError' },
+        job_rank: { element: 'job_rank', errorId: 'job_rankError' },
         status: { element: 'status', errorId: 'statusError' },
         lastInspectionDate: { element: 'lastInspectionDate', errorId: 'lastInspectionDateError' },
         lastInspectionScore: { element: 'lastInspectionScore', errorId: 'lastInspectionScoreError' },
@@ -283,7 +283,7 @@ function validateField(fieldName) {
  * Validate entire form
  */
 function validateForm() {
-    const fields = ['district', 'schoolYear', 'schoolName', 'yearsWorked', 'firstName', 'familyName', 'maidenName', 'birthDate', 'birthPlace', 'residence', 'gender', 'maritalStatus', 'childrenCount', 'spouseName', 'phone', 'email', 'address', 'diploma', 'firstAppointmentDate', 'rank', 'status', 'techInstituteGradYear', 'universityGradYear', 'lastInspectionDate', 'lastInspectionScore', 'echelon', 'grade', 'executionDate', 'latestInspectionDate', 'latestInspectionScore', 'previousYearClass', 'currentYearClass', 'studentCount', 'haraka'];
+    const fields = ['district', 'schoolYear', 'schoolName', 'yearsWorked', 'firstName', 'familyName', 'maidenName', 'birthDate', 'birthPlace', 'residence', 'gender', 'maritalStatus', 'childrenCount', 'spouseName', 'phone', 'email', 'address', 'diploma', 'firstAppointmentDate', 'job_rank', 'status', 'techInstituteGradYear', 'universityGradYear', 'lastInspectionDate', 'lastInspectionScore', 'echelon', 'grade', 'executionDate', 'latestInspectionDate', 'latestInspectionScore', 'previousYearClass', 'currentYearClass', 'studentCount', 'haraka'];
     let isFormValid = true;
 
     fields.forEach(field => {
@@ -334,8 +334,8 @@ function validateForm() {
     if (el) el.addEventListener('change', () => validateField(fieldId));
 });
 
-// Text inputs — rank, status, echelon, grade + lastInspectionScore
-['rank', 'status', 'echelon', 'grade', 'lastInspectionScore', 'latestInspectionScore'].forEach(fieldId => {
+// Text inputs — job_rank, status, echelon, grade + lastInspectionScore
+['job_rank', 'status', 'echelon', 'grade', 'lastInspectionScore', 'latestInspectionScore'].forEach(fieldId => {
     const input = document.getElementById(fieldId);
     if (!input) return;
     input.addEventListener('blur', () => validateField(fieldId));
@@ -495,7 +495,7 @@ form.addEventListener('submit', async function(e) {
         tech_institute_grad_year: document.getElementById('techInstituteGradYear').value || null,
         university_grad_year: document.getElementById('universityGradYear').value || null,
         first_appointment_date: document.getElementById('firstAppointmentDate').value,
-        rank: document.getElementById('rank').value.trim(),
+        job_rank: document.getElementById('job_rank').value.trim(),
         status: document.getElementById('status').value.trim(),
         last_inspection_date: document.getElementById('lastInspectionDate').value || null,
         last_inspection_score: document.getElementById('lastInspectionScore').value !== '' ? parseInt(document.getElementById('lastInspectionScore').value, 10) : null,
@@ -644,7 +644,7 @@ function collectFormData() {
         techInstituteGradYear: get('techInstituteGradYear'),
         universityGradYear   : get('universityGradYear'),
         firstAppointmentDate : get('firstAppointmentDate'),
-        rank                 : get('rank'),
+        job_rank             : get('job_rank'),
         status               : get('status'),
         lastInspectionDate   : get('lastInspectionDate'),
         lastInspectionScore  : get('lastInspectionScore'),
@@ -801,7 +801,7 @@ function buildPDFTemplate(data) {
                 ${full('الشهادة / الدبلوم المحصل عليه', data.diploma)}
                 ${data.schoolEntryDate ? full('تاريخ الدخول المدرسي الأولي', formatDate(data.schoolEntryDate)) : ''}
                 ${full('تاريخ أول تعيين بالتعليم', formatDate(data.firstAppointmentDate))}
-                ${dual('الرتبة', data.rank, 'الصفة', data.status)}
+                ${dual('الرتبة', data.job_rank, 'الصفة', data.status)}
                 ${tri('السلم', data.echelon, 'الدرجة', data.grade, 'تاريخ التنفيذ', formatDate(data.executionDate))}
                 ${dual('تاريخ آخر تفتيش', formatDate(data.latestInspectionDate), 'علامته', data.latestInspectionScore)}
                 ${dual('تاريخ التفتيش ما قبل الأخير', formatDate(data.lastInspectionDate), 'علامته', data.lastInspectionScore)}
