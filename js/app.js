@@ -95,13 +95,13 @@ const validators = {
 
     maritalStatus() {
         const civil = document.getElementById('civil');
-        if (civil.style.display === 'none') return true; // masqué = pas encore requis
+        if (!civil || civil.style.display === 'none') return true; // masqué = pas encore requis
         return document.querySelector('input[name="marital_status"]:checked') !== null;
     },
 
     spouseName(value) {
         const group = document.getElementById('spouseNameGroup');
-        if (group.style.display === 'none') return true; // optionnel si masqué
+        if (!group || group.style.display === 'none') return true; // optionnel si masqué
         return value.trim().length >= 3;
     },
 
@@ -263,17 +263,20 @@ function validateField(fieldName) {
     const value = input ? input.value : '';
     const isValid = validators[fieldName](value);
 
-    // Update UI
-    const formGroup = (input || errorEl).closest('.form-group');
-    
+    // Update UI — skip if neither element exists in this page's DOM
+    const anchor = input || errorEl;
+    if (!anchor) return isValid;
+    const formGroup = anchor.closest('.form-group');
+    if (!formGroup) return isValid;
+
     if (isValid) {
         formGroup.classList.remove('error');
         formGroup.classList.add('valid');
-        errorEl.textContent = '';
+        if (errorEl) errorEl.textContent = '';
     } else {
         formGroup.classList.remove('valid');
         formGroup.classList.add('error');
-        errorEl.textContent = CONFIG.MESSAGES[fieldName];
+        if (errorEl) errorEl.textContent = CONFIG.MESSAGES[fieldName];
     }
 
     return isValid;
@@ -383,6 +386,7 @@ function updateChildrenCountVisibility() {
     const marital = document.querySelector('input[name="marital_status"]:checked')?.value;
     const group = document.getElementById('childrenCountGroup');
     const input = document.getElementById('childrenCount');
+    if (!group || !input) return;
     const singleValues = ['أعزب', 'عزباء'];
     const show = marital !== undefined && !singleValues.includes(marital);
     group.style.display = show ? 'block' : 'none';
@@ -399,6 +403,7 @@ function updateSpouseNameVisibility() {
     const marital = document.querySelector('input[name="marital_status"]:checked')?.value;
     const group = document.getElementById('spouseNameGroup');
     const input = document.getElementById('spouseName');
+    if (!group || !input) return;
     const show = gender === 'أنثى' && marital === 'متزوج';
     group.style.display = show ? 'block' : 'none';
     group.style.animation = show ? 'fadeIn 0.3s ease' : '';
@@ -479,11 +484,11 @@ form.addEventListener('submit', async function(e) {
         birth_place: document.getElementById('birthPlace').value.trim(),
         residence: document.getElementById('residence').value.trim(),
         marital_status: document.querySelector('input[name="marital_status"]:checked')?.value || '',
-        children_count: document.getElementById('childrenCountGroup').style.display !== 'none'
-            ? parseInt(document.getElementById('childrenCount').value, 10)
+        children_count: document.getElementById('childrenCountGroup')?.style.display !== 'none'
+            ? parseInt(document.getElementById('childrenCount')?.value || '', 10) || null
             : null,
-        spouse_name: document.getElementById('spouseNameGroup').style.display !== 'none'
-            ? document.getElementById('spouseName').value.trim()
+        spouse_name: document.getElementById('spouseNameGroup')?.style.display !== 'none'
+            ? (document.getElementById('spouseName')?.value.trim() || '')
             : '',
         birth_date: document.getElementById('birthDate').value,
         gender: document.querySelector('input[name="gender"]:checked').value,
@@ -516,8 +521,10 @@ form.addEventListener('submit', async function(e) {
     setLoadingState(true);
 
     try {
+        console.log('[FormSubmit] Envoi de la requête POST vers', CONFIG.API_URL);
         const response = await fetch(CONFIG.API_URL, {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
@@ -525,22 +532,34 @@ form.addEventListener('submit', async function(e) {
             body: JSON.stringify(formData)
         });
 
+        console.log('[FormSubmit] Réponse HTTP reçue — statut :', response.status, response.statusText);
+
         const result = await response.json().catch(() => null);
+        console.log('[FormSubmit] Réponse JSON du serveur :', result);
 
         if (!response.ok) {
             // Afficher le message métier renvoyé par le serveur (ex. email en double)
             const msg = result?.message || CONFIG.MESSAGES.serverError;
+            console.warn('[FormSubmit] Erreur serveur :', response.status, msg);
             showError(msg);
             return;
         }
 
         if (result.success) {
-            showSuccess();
+            console.log('[FormSubmit] Enregistrement réussi. Réponse :', result.message);
+            if (response.status === 201) {
+                // Nouveau record : masquer le formulaire et afficher le message de succès
+                showSuccess();
+            } else {
+                // Mise à jour : afficher une notification brève sans masquer le formulaire
+                showUpdateSuccess();
+            }
         } else {
+            console.error('[FormSubmit] Échec signalé par le serveur :', result.message);
             showError(result.message || CONFIG.MESSAGES.serverError);
         }
     } catch (error) {
-        console.error('Submission error:', error);
+        console.error('[FormSubmit] Erreur réseau ou exception :', error);
         showError(CONFIG.MESSAGES.networkError);
     } finally {
         setLoadingState(false);
@@ -561,6 +580,43 @@ function showSuccess() {
     form.style.display = 'none';
     document.querySelector('.form-header').style.display = 'none';
     successMessage.style.display = 'block';
+}
+
+function showUpdateSuccess() {
+    const notification = document.createElement('div');
+    notification.className = 'notification update-notification';
+    notification.innerHTML = `
+        <span>✓ تم تحديث المعلومات بنجاح</span>
+        <button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;font-size:1.2rem;cursor:pointer;padding:0 8px;">&times;</button>
+    `;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #27ae60;
+        color: white;
+        padding: 14px 24px;
+        border-radius: 8px;
+        font-family: var(--font-family);
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 1000;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        animation: fadeIn 0.3s ease;
+    `;
+    document.body.appendChild(notification);
+
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 4000);
 }
 
 function showError(message) {

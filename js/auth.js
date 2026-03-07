@@ -79,6 +79,12 @@ const Auth = (() => {
             const res  = await fetch('api/auth/prefill.php', { credentials: 'same-origin' });
             const json = await res.json();
 
+            // Toujours pré-remplir l'email depuis la session (même si pas encore de fiche)
+            const emailEl = document.getElementById('email');
+            if (emailEl && _currentUser && _currentUser.email) {
+                emailEl.value = _currentUser.email;
+            }
+
             if (!json.success || !json.data) return;
 
             const d = json.data;

@@ -83,31 +83,38 @@ try {
 
     // Force the email to the session user (prevents spoofing)
     $data['email'] = $sessionEmail;
+    error_log('[submit.php] Utilisateur en session : ' . $sessionEmail);
 
     // 2. Validate required fields
     $errors = validateData($data);
     if (!empty($errors)) {
+        error_log('[submit.php] Validation échouée pour ' . $sessionEmail . ' — erreurs : ' . json_encode($errors, JSON_UNESCAPED_UNICODE));
         sendResponse(false, 'بيانات غير صالحة', 422, ['errors' => $errors]);
         exit;
     }
+    error_log('[submit.php] Validation réussie pour ' . $sessionEmail);
 
     // 3. Sanitize data
     $sanitized = sanitizeData($data);
 
     // 4. Insert or Update based on whether the user already has a record
     if (recordExistsForEmail($sessionEmail)) {
+        error_log('[submit.php] UPDATE — mise à jour de la fiche de ' . $sessionEmail);
         updateInDatabase($sanitized, $sessionEmail);
+        error_log('[submit.php] UPDATE réussi pour ' . $sessionEmail);
         sendResponse(true, 'تم تحديث المعلومات بنجاح', 200);
     } else {
+        error_log('[submit.php] INSERT — création de la fiche de ' . $sessionEmail);
         $id = saveToDatabase($sanitized);
+        error_log('[submit.php] INSERT réussi pour ' . $sessionEmail . ' — ID créé : ' . $id);
         sendResponse(true, 'تم حفظ المعلومات بنجاح', 201, ['id' => $id]);
     }
 
 } catch (PDOException $e) {
-    error_log('Database error: ' . $e->getMessage());
+    error_log('[submit.php] Erreur base de données pour ' . ($sessionEmail ?? 'inconnu') . ' : ' . $e->getMessage());
     sendResponse(false, 'حدث خطأ في قاعدة البيانات', 500);
 } catch (Exception $e) {
-    error_log('Server error: ' . $e->getMessage());
+    error_log('[submit.php] Erreur serveur pour ' . ($sessionEmail ?? 'inconnu') . ' : ' . $e->getMessage());
     sendResponse(false, 'حدث خطأ في الخادم', 500);
 }
 
