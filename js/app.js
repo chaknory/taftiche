@@ -156,7 +156,9 @@ const validators = {
     },
 
     job_rank(value) {
-         return true; // champ optionnel
+        if (!value) return true; // champ optionnel
+        // Valider contre la liste chargée depuis l'API (si disponible)
+        return !window.VALID_JOB_RANKS || window.VALID_JOB_RANKS.includes(value);
     },
 
     status(value) {
@@ -337,8 +339,15 @@ function validateForm() {
     if (el) el.addEventListener('change', () => validateField(fieldId));
 });
 
-// Text inputs — job_rank, status, echelon, grade + lastInspectionScore
-['job_rank', 'status', 'echelon', 'grade', 'lastInspectionScore', 'latestInspectionScore'].forEach(fieldId => {
+// Selects — job_rank, status
+['job_rank', 'status'].forEach(fieldId => {
+    const sel = document.getElementById(fieldId);
+    if (!sel) return;
+    sel.addEventListener('change', () => validateField(fieldId));
+});
+
+// Text inputs — echelon, grade + inspection scores
+['echelon', 'grade', 'lastInspectionScore', 'latestInspectionScore'].forEach(fieldId => {
     const input = document.getElementById(fieldId);
     if (!input) return;
     input.addEventListener('blur', () => validateField(fieldId));

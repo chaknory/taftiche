@@ -136,8 +136,18 @@ const Auth = (() => {
 
             // ── 2. Select ─────────────────────────────────────────────────
             setSelect('schoolName',            d.school_name);
-            setSelect('job_rank',                  d.job_rank);
-            setSelect('status',                d.status);
+            setSelect('job_rank',              d.job_rank);
+            // status : affectation directe puis normalisation des anciennes valeurs libres
+            (function setStatus(val) {
+                if (!val) return;
+                const sel = document.getElementById('status');
+                if (!sel) return;
+                sel.value = val;          // fonctionne si la valeur correspond exactement à une option
+                if (!sel.value) {         // aucune option trouvée → valeur héritée (saisie libre)
+                    const legacy = { 'متربص': 'متربص(ة)', 'مرسم': 'مرسم(ة)', 'متعاقد': 'متعاقد(ة)' };
+                    sel.value = legacy[val] || '';
+                }
+            })(d.status);
             setSelect('grade',                 d.grade);
             setSelect('previousYearClass',     d.previous_year_class);
             setSelect('currentYearClass',      d.current_year_class);
@@ -498,7 +508,7 @@ const Auth = (() => {
                     <td><span class="ap-badge ap-badge--${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'مفعّل' : 'معطّل'}</span></td>
                     <td>${escHtml(u.last_login || '—')}</td>
                     <td class="ap-actions">
-                        <button class="ap-btn ap-btn--edit" data-id="${u.id}" data-type="user">تعديل</button>
+                        <button class="ap-btn ap-btn--edit" data-id="${u.id}" data-type="user"></button>
                         <button class="ap-btn ap-btn--delete" data-id="${u.id}" data-type="user"
                             data-name="${escHtml(u.username)}">حذف</button>
                     </td>

@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Le pilote (sqlite / mysql) et les identifiants sont centralisés dans config.php.
 // Modifiez DB_DRIVER dans ce fichier pour basculer entre les deux environnements.
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../utils/job_rank.php';
 
 // ==========================================
 // Session — identify connected user
@@ -230,6 +231,12 @@ function validateData($data) {
     // معني بالحركة
     if (empty($data['haraka']) || !in_array($data['haraka'], ['نعم', 'لا'])) {
         $errors['haraka'] = 'يرجى تحديد ما إذا كنت معنيًا بالحركة';
+    }
+
+    // الرتبة (اختياري — لكن إذا وُجدت يجب أن تكون من القيم المعتمدة)
+    $validRanks = array_map(fn(JobRank $r) => $r->value, JobRank::all());
+    if (!empty($data['job_rank']) && !in_array($data['job_rank'], $validRanks, true)) {
+        $errors['job_rank'] = 'الرتبة المختارة غير صالحة';
     }
 
     return $errors;

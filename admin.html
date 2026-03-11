@@ -829,11 +829,21 @@
         <div class="edit-row">
           <div class="edit-field">
             <label>الرتبة</label>
-            <input id="ef_job_rank" type="text" maxlength="100">
+            <select id="ef_job_rank">
+              <option value="">--</option>
+            </select>
           </div>
-          <div class="edit-field">
-            <label>الوضعية</label>
-            <input id="ef_status" type="text" maxlength="100">
+            <div class="edit-field">
+            <label for="ef_status">
+              <span class="label-text">الصفة</span>
+            </label>
+            <select id="ef_status" name="status">
+                    <option value="">-- اختر الصفة --</option>
+                    <option value="متربص(ة)">متربص(ة)</option>
+                    <option value="مرسم(ة)">مرسم(ة)</option>
+                    <option value="متعاقد(ة)">متعاقد(ة)</option>
+                </select>
+                    <span class="field-error" id="ef_status_err"></span>
           </div>
           <div class="edit-field">
             <label>السلم </label>
@@ -1125,11 +1135,6 @@
             <label>الرتبة</label>
             <select id="ar_job_rank">
               <option value="">-- اختر --</option>
-              <option value="أستاذ تعليم إبتدائي قسم أول">أستاذ تعليم إبتدائي قسم أول</option>
-              <option value="أستاذ تعليم إبتدائي قسم ثاني">أستاذ تعليم إبتدائي قسم ثاني</option>
-              <option value="أستاذ تعليم إبتدائي مميز">أستاذ تعليم إبتدائي مميز</option>
-              <option value="أستاذ تعليم إبتدائي متربص">أستاذ تعليم إبتدائي متربص</option>
-              <option value="أستاذ تعليم إبتدائي متعاقد">أستاذ تعليم إبتدائي متعاقد</option>
             </select>
           </div>
           <div class="edit-field">
@@ -1326,12 +1331,41 @@
             document.getElementById('adminBadge').textContent =
                 (data.user.first_name || '') + ' ' + (data.user.last_name || '') || data.user.username;
 
-            await Promise.all([loadRecords(), loadUsers()]);
+            await Promise.all([loadJobRanks(), loadRecords(), loadUsers()]);
 
         } catch (err) {
             console.error('Admin boot error:', err);
             window.location.href = 'login.html';
         }
+    }
+
+    // ── Job Ranks – populate all job_rank selects from the central API ─────
+    let validJobRanks = [];
+
+    async function loadJobRanks() {
+        try {
+            const res  = await fetch('api/job_ranks.php', { credentials: 'same-origin' });
+            const data = await res.json();
+            if (!data.success) return;
+            validJobRanks = data.ranks;
+            populateJobRankSelect('ar_job_rank', '-- اختر --');
+            populateJobRankSelect('ef_job_rank', '--');
+        } catch (e) {
+            console.warn('Impossible de charger les rangs:', e);
+        }
+    }
+
+    function populateJobRankSelect(id, placeholder) {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        // Keep only the placeholder option
+        sel.innerHTML = `<option value="">${placeholder}</option>`;
+        validJobRanks.forEach(rank => {
+            const opt = document.createElement('option');
+            opt.value       = rank;
+            opt.textContent = rank;
+            sel.appendChild(opt);
+        });
     }
 
     // ── Tabs ───────────────────────────────────────────────────────────────
