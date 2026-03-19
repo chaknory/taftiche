@@ -40,7 +40,7 @@
                         type="text"
                         id="district"
                         name="district"
-                        value="11"
+                        value="6"
                         required
                         minlength="1"
                         maxlength="50"
@@ -79,9 +79,6 @@
                         required
                     >
                         <option value="">-- اختر اسم المدرسة --</option>
-                        <option value="مدرسة نورالدين زنكي">مدرسة نورالدين زنكي</option>
-                        <option value="مدرسة أبوبكر الصديق">مدرسة أبوبكر الصديق</option>
-                        <option value="مدرسة عمرالفاروق">مدرسة عمرالفاروق</option>
                     </select>
                     <span class="error-message" id="schoolNameError"></span>
                 </div>
@@ -316,24 +313,6 @@
                     readonly
                 >
                 <span class="error-message" id="emailError"></span>
-            </div>
-
-            <!-- العنوان -->
-            <div class="form-group">
-                <label for="address">
-                    <span class="label-text">العنوان</span>
-                    <span class="required">*</span>
-                </label>
-                <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    placeholder="أدخل العنوان الكامل"
-                    required
-                    minlength="5"
-                    maxlength="200"
-                >
-                <span class="error-message" id="addressError"></span>
             </div>
 
             <!-- ═══ المسار المهني ═══ -->
@@ -592,6 +571,22 @@
                 </div>
             </div>
 
+            <!-- ملاحظة نصية للقسم -->
+            <div class="form-row">
+                <div class="form-group form-group-grow">
+                    <label for="classNote">
+                        <span class="label-text">ملاحظة نصية للقسم</span>
+                    </label>
+                    <textarea
+                        id="classNote"
+                        name="class_note"
+                        rows="3"
+                        placeholder="أدخل ملاحظات حول القسم هنا..."
+                        style="resize: vertical;"
+                    ></textarea>
+                </div>
+            </div>
+
             <!-- التوزيع الأسبوعي -->
             <div class="timetable-section">
                 <button type="button" class="timetable-toggle" id="timetableToggle" aria-expanded="false" aria-controls="timetableBody">
@@ -745,6 +740,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/app.js"></script>
+    <script>
+        // Set VALID_JOB_RANKS for the JS validator (options are now static in the HTML)
+        window.VALID_JOB_RANKS = [
+            'أستاذ تعليم إبتدائي قسم أول',
+            'أستاذ تعليم إبتدائي قسم ثاني',
+            'أستاذ تعليم إبتدائي مميز',
+            'أستاذ تعليم إبتدائي متربص',
+            'أستاذ تعليم إبتدائي متعاقد'
+        ];
+    </script>
     <script>
         (function () {
             var btn  = document.getElementById('timetableToggle');

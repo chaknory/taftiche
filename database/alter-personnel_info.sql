@@ -1,0 +1,1 @@
+ALTER TABLE personal_info DROP COLUMN address;

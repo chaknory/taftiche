@@ -5,8 +5,7 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $pdo->exec('PRAGMA foreign_keys = ON;');
 
 $migrations = [
-    'migrate_add_missing_fields.sql',
-    'migrate_add_inspections.sql',
+    'add-inspecteur.sql',
 ];
 
 foreach ($migrations as $file) {
@@ -20,7 +19,7 @@ foreach ($migrations as $file) {
         if ($st === '') continue;
         try {
             $pdo->exec($st);
-            echo "OK  : " . substr($st, 0, 80) . "\n";
+            echo "OK  : " . substr($st, 0, 80) . "\n";            
         } catch (PDOException $e) {
             echo "SKIP: " . $e->getMessage() . "\n";
         }

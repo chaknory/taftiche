@@ -12,22 +12,22 @@
  * ================================================================
  */
 
-//define('DB_DRIVER', 'sqlite');   // ← changer ici : 'sqlite' ou 'mysql'
-define('DB_DRIVER', 'mysql'); 
+define('DB_DRIVER', 'sqlite');   // ← changer ici : 'sqlite' ou 'mysql'
+//define('DB_DRIVER', 'mysql'); 
 // ── SQLite ────────────────────────────────────────────────────────────────────
 // Chemin vers le fichier de base de données SQLite
-//define('DB_SQLITE_PATH',   __DIR__ . '/../database/personal_info.sqlite');
+define('DB_SQLITE_PATH',   __DIR__ . '/../database/personal_info.sqlite');
 
 // Chemin vers le schéma SQL SQLite (utilisé pour initialiser une nouvelle DB)
-//define('DB_SCHEMA_SQLITE', __DIR__ . '/../database/schema.sql');
+define('DB_SCHEMA_SQLITE', __DIR__ . '/../database/schema.sql');
 
 // ── MySQL ─────────────────────────────────────────────────────────────────────
 // À renseigner avec les informations fournies par votre hébergeur
-define('DB_MYSQL_HOST',     'tafticc182.mysql.db');
+define('DB_MYSQL_HOST',     'localhost');
 define('DB_MYSQL_PORT',     '3306');
-define('DB_MYSQL_DBNAME',   'tafticc182');       // nom de la base de données
-define('DB_MYSQL_USER',     'tafticc182');  // nom d'utilisateur MySQL
-define('DB_MYSQL_PASSWORD', 'gFsWlj4EJtSvkth0');      // mot de passe MySQL
+define('DB_MYSQL_DBNAME',   'taftiche');       // nom de la base de données
+define('DB_MYSQL_USER',     'taftiche_user');  // nom d'utilisateur MySQL
+define('DB_MYSQL_PASSWORD', 'change_me');      // mot de passe MySQL
 
 // ── Helpers communs ───────────────────────────────────────────────────────────
 

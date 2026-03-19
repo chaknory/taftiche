@@ -14,6 +14,7 @@
  *   "email"      : "user@example.com",
  *   "username"   : "mbensalem",
  *   "password"   : "MonMotDePasse123!",
+ *   "consent_personal_data" : true,
  *   "role"       : "user"   (optionnel, "admin" uniquement pour un admin)
  * }
  */
@@ -54,6 +55,7 @@ try {
     $email     = strtolower(trim($body['email']    ?? ''));
     $username  = trim($body['username'] ?? '');
     $password  = $body['password']  ?? '';
+    $consentPersonalData = filter_var($body['consent_personal_data'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
     $role      = trim($body['role'] ?? 'user');
 
     // ── Validation ─────────────────────────────────────────────────────────
@@ -75,6 +77,10 @@ try {
         $errors['password'] = 'كلمة المرور تقبل فقط الأحرف اللاتينية والأرقام والرموز الخاصة (بدون مسافة أو أحرف عربية)';
     } elseif (!preg_match('/^(?=.*[A-Z])(?=.*\d).{8,}$/', $password)) {
         $errors['password'] = 'كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل، حرف كبير ورقم واحد';
+    }
+
+    if ($consentPersonalData !== true) {
+        $errors['consent_personal_data'] = 'يجب الموافقة على جمع ومعالجة البيانات الشخصية لإتمام إنشاء الحساب';
     }
 
     if (!in_array($role, ['admin', 'user'], true)) $role = 'user';

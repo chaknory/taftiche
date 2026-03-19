@@ -37,14 +37,14 @@ try {
         $stmt = $pdo->query(
             "SELECT id, first_name, family_name, maiden_name, gender, birth_date,
                     birth_place, residence, marital_status, spouse_name, children_count,
-                    phone, email, address,
+                    phone, email,
                     district, school_year, school_name, years_worked,
                     school_entry_date, diploma,
                     first_appointment_date, job_rank, status, echelon, grade, execution_date,
                     latest_inspection_date, latest_inspection_score,
                     last_inspection_date, last_inspection_score,
                     previous_year_class, current_year_class,
-                    student_count, haraka,
+                    student_count, haraka, class_note,
                     tech_institute_grad_year, university_grad_year,
                     created_at, updated_at
              FROM personal_info
@@ -75,7 +75,6 @@ try {
         $childrenCount        = isset($body['children_count']) && $body['children_count'] !== '' ? (int)$body['children_count'] : null;
         $phone                = preg_replace('/[^\+0-9\-\s]/', '', trim($body['phone'] ?? ''));
         $email                = strtolower(trim($body['email'] ?? ''));
-        $address              = $s2('address');
         $district             = $s2('district') ?: '11';
         $schoolYear           = $s2('school_year') ?: '2025 / 2026';
         $schoolName           = $s2('school_name');
@@ -96,6 +95,7 @@ try {
         $currentYearClass     = $s2('current_year_class');
         $studentCount         = isset($body['student_count']) && $body['student_count'] !== '' ? (int)$body['student_count'] : null;
         $haraka               = in_array($body['haraka'] ?? '', ['نعم','لا'], true) ? $body['haraka'] : null;
+        $classNote            = htmlspecialchars(trim($body['class_note'] ?? ''), ENT_QUOTES, 'UTF-8');
         $techInstGradYear     = $s2('tech_institute_grad_year');
         $uniGradYear          = $s2('university_grad_year');
 
@@ -116,7 +116,6 @@ try {
             $dup->execute([':e' => $email]);
             if ($dup->fetch()) $errors['email'] = 'البريد الإلكتروني مستخدم بالفعل';
         }
-        if (mb_strlen($address)  < 5) $errors['address']  = 'العنوان مطلوب';
         if (mb_strlen($diploma)  < 2) $errors['diploma']  = 'الشهادة مطلوبة';
         if (mb_strlen($schoolName) < 2) $errors['school_name'] = 'اسم المدرسة مطلوب';
 
@@ -131,13 +130,13 @@ try {
                  first_name, family_name, maiden_name,
                  birth_date, birth_place, residence, gender,
                  marital_status, spouse_name, children_count,
-                 phone, email, address,
+                 phone, email,
                  school_entry_date, diploma,
                  first_appointment_date, job_rank, status, echelon, grade, execution_date,
                  latest_inspection_date, latest_inspection_score,
                  last_inspection_date, last_inspection_score,
                  previous_year_class, current_year_class,
-                 student_count, haraka,
+                 student_count, haraka, class_note,
                  tech_institute_grad_year, university_grad_year)
              VALUES
                 (:di, :sy, :sname, :yw,
@@ -150,7 +149,7 @@ try {
                  :lid, :lis,
                  :laid, :lais,
                  :pyc, :cyc,
-                 :sc, :hrk,
+                 :sc, :hrk, :cn,
                  :tigy, :ugy)"
         )->execute([
             ':di'   => $district,    ':sy'   => $schoolYear,  ':sname'=> $schoolName,
@@ -159,7 +158,7 @@ try {
             ':bd'   => $birthDate,   ':bp'   => $birthPlace,  ':res'  => $residence,
             ':gen'  => $gender,      ':ms'   => $maritalStatus,':sn'  => $spouseName ?: null,
             ':cc'   => $childrenCount,':ph'  => $phone,        ':em'  => $email,
-            ':addr' => $address,     ':sed'  => $schoolEntry,  ':dip' => $diploma,
+            ':sed'  => $schoolEntry,  ':dip' => $diploma,
             ':fad'  => $firstAppointmentDate ?: null,
             ':rnk'  => $rank ?: null, ':stat' => $status ?: null, ':ech' => $echelon ?: null,
             ':grd'  => $grade ?: null,':exd'  => $executionDate ?: null,
@@ -167,6 +166,7 @@ try {
             ':laid' => $lastInspDate ?: null,    ':lais' => $lastInspScore,
             ':pyc'  => $previousYearClass ?: null, ':cyc' => $currentYearClass ?: null,
             ':sc'   => $studentCount,  ':hrk'  => $haraka,
+            ':cn'   => $classNote ?: null,
             ':tigy' => $techInstGradYear ?: null, ':ugy'  => $uniGradYear ?: null,
         ]);
 
@@ -205,7 +205,6 @@ try {
         $childrenCount        = isset($body['children_count']) && $body['children_count'] !== '' ? (int)$body['children_count'] : $rec['children_count'];
         $phone                = isset($body['phone']) ? preg_replace('/[^\+0-9\-\s]/', '', trim($body['phone'])) : $rec['phone'];
         $email                = isset($body['email']) ? strtolower(trim($body['email'])) : $rec['email'];
-        $address              = $s('address');
         $district             = $s('district');
         $schoolYear           = $s('school_year');
         $schoolName           = $s('school_name');
@@ -226,6 +225,7 @@ try {
         $currentYearClass     = $s('current_year_class');
         $studentCount         = isset($body['student_count']) && $body['student_count'] !== '' ? (int)$body['student_count'] : $rec['student_count'];
         $haraka               = in_array($body['haraka'] ?? '', ['نعم','لا'], true) ? $body['haraka'] : $rec['haraka'];
+        $classNote            = isset($body['class_note']) ? htmlspecialchars(trim($body['class_note']), ENT_QUOTES, 'UTF-8') : $rec['class_note'];
         $techInstGradYear     = $s('tech_institute_grad_year');
         $uniGradYear          = $s('university_grad_year');
 
@@ -247,7 +247,7 @@ try {
                 first_name=:fn, family_name=:fam, maiden_name=:mn,
                 gender=:gen, birth_date=:bd, birth_place=:bp, residence=:res,
                 marital_status=:ms, spouse_name=:sn, children_count=:cc,
-                phone=:ph, email=:em, address=:addr,
+                phone=:ph, email=:em,
                 district=:di, school_year=:sy, school_name=:sname,
                 years_worked=:yw, school_entry_date=:sed, diploma=:dip,
                 first_appointment_date=:fad, job_rank=:rnk, status=:stat,
@@ -255,7 +255,7 @@ try {
                 latest_inspection_date=:lid, latest_inspection_score=:lis,
                 last_inspection_date=:laid, last_inspection_score=:lais,
                 previous_year_class=:pyc, current_year_class=:cyc,
-                student_count=:sc, haraka=:hrk,
+                student_count=:sc, haraka=:hrk, class_note=:cn,
                 tech_institute_grad_year=:tigy, university_grad_year=:ugy
              WHERE id = :id"
         )->execute([
@@ -263,7 +263,7 @@ try {
             ':gen'  => $gender,       ':bd'   => $birthDate,    ':bp'   => $birthPlace,
             ':res'  => $residence,    ':ms'   => $maritalStatus, ':sn'  => $spouseName,
             ':cc'   => $childrenCount,':ph'   => $phone,         ':em'  => $email,
-            ':addr' => $address,      ':di'   => $district,      ':sy'  => $schoolYear,
+            ':di'   => $district,      ':sy'  => $schoolYear,
             ':sname'=> $schoolName,   ':yw'   => $yearsWorked,   ':sed' => $schoolEntry,
             ':dip'  => $diploma,      ':fad'  => $firstAppointmentDate ?: null,
             ':rnk'  => $rank ?: null, ':stat' => $status ?: null, ':ech' => $echelon ?: null,
@@ -272,6 +272,7 @@ try {
             ':laid' => $lastInspDate ?: null,    ':lais' => $lastInspScore,
             ':pyc'  => $previousYearClass ?: null, ':cyc' => $currentYearClass ?: null,
             ':sc'   => $studentCount,  ':hrk'  => $haraka ?: null,
+            ':cn'   => $classNote ?: null,
             ':tigy' => $techInstGradYear ?: null, ':ugy'  => $uniGradYear ?: null,
             ':id'   => $id,
         ]);

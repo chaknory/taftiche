@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS personal_info (
     gender              TEXT    NOT NULL CHECK(gender IN ('ذكر','أنثى')),        -- الجنس
     phone               TEXT    NOT NULL,                                        -- رقم الهاتف
     email               TEXT    NOT NULL UNIQUE,                                  -- البريد الإلكتروني
-    address             TEXT    NOT NULL,                                        -- العنوان
     school_entry_date   TEXT    NOT NULL,                                        -- تاريخ الدخول المدرسي (YYYY-MM-DD)
     diploma             TEXT    NOT NULL,                                        -- الشهادة / الدبلوم
     first_appointment_date TEXT,                                                 -- تاريخ أول تعيين بالتعليم
@@ -39,6 +38,7 @@ CREATE TABLE IF NOT EXISTS personal_info (
     current_year_class  TEXT,                                                    -- القسم المُسند هذا العام
     student_count       INTEGER CHECK(student_count IS NULL OR (student_count >= 0 AND student_count <= 200)), -- عدد التلاميذ
     haraka              TEXT    CHECK(haraka IS NULL OR haraka IN ('نعم','لا')), -- معني بالحركة
+    class_note          TEXT,                                                    -- ملاحظة نصية للقسم
     children_count      INTEGER CHECK(children_count IS NULL OR (children_count >= 0 AND children_count <= 30)), -- عدد الأطفال
     tech_institute_grad_year TEXT,                                               -- سنة التخرج من المعهد التكنولوجي
     university_grad_year TEXT,                                                   -- سنة التخرج من الجامعة
@@ -127,20 +127,55 @@ BEGIN
 END;
 
 -- =============================================
--- Table des évaluations
--- جدول التقييمات
+-- Table des écoles
+-- جدول المدارس
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS ecole (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    nom            TEXT    NOT NULL UNIQUE,    -- اسم المدرسة
+    district       TEXT    DEFAULT NULL,       -- المقاطعة
+    code           TEXT    DEFAULT NULL,       -- الرمز
+    adresse        TEXT    DEFAULT NULL,       -- العنوان
+    ville          TEXT    DEFAULT NULL,       -- المدينة
+    nb_directeur   INTEGER DEFAULT 0,
+    nb_sub_dir     INTEGER DEFAULT 0,
+    nb_Prf_arb     INTEGER DEFAULT 0,
+    nb_prf_frc     INTEGER DEFAULT 0,
+    nb_prf_ang     INTEGER DEFAULT 0,
+    nb_prf_sprt    INTEGER DEFAULT 0,
+    created_at     TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at     TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_ecole_nom ON ecole(nom);
+
+CREATE TRIGGER IF NOT EXISTS trg_ecole_updated_at
+AFTER UPDATE ON ecole
+FOR EACH ROW
+BEGIN
+    UPDATE ecole SET updated_at = datetime('now') WHERE id = OLD.id;
+END;
+
+-- Données initiales
+INSERT OR IGNORE INTO ecole (nom) VALUES
+    ('مدرسة نورالدين زنكي'),
+    ('مدرسة أبوبكر الصديق'),
+    ('مدرسة عمرالفاروق');
+
+-- =============================================
+-- Tables des évaluations
+-- جداول التقييمات
 -- =============================================
 
 CREATE TABLE IF NOT EXISTS evaluations (
-    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-    inspection_id       INTEGER NOT NULL,                                        -- معرف التفتيش
-    points_forts        TEXT,                                                    -- نقاط القوة
-    points_faibles      TEXT,                                                    -- نقاط الضعف
-    recommandations     TEXT,                                                    -- التوصيات
-    note_finale         TEXT,                                                    -- النقطة النهائية
-    created_at          TEXT    NOT NULL DEFAULT (datetime('now')),
-    updated_at          TEXT,
-    FOREIGN KEY (inspection_id) REFERENCES inspections(id) ON DELETE CASCADE
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    inspection_id   INTEGER DEFAULT NULL,
+    note_finale     TEXT    DEFAULT NULL,
+    titre           TEXT    DEFAULT '',
+    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at      TEXT,
+    FOREIGN KEY (inspection_id) REFERENCES inspections(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_evaluations_inspection ON evaluations(inspection_id);
@@ -152,33 +187,34 @@ BEGIN
     UPDATE evaluations SET updated_at = datetime('now') WHERE id = OLD.id;
 END;
 
--- =============================================
--- Table des observations en classe
--- جدول الملاحظات الصفية
--- =============================================
-
-CREATE TABLE IF NOT EXISTS observations (
-    id                          INTEGER PRIMARY KEY AUTOINCREMENT,
-    inspection_id               INTEGER NOT NULL,                                -- معرف التفتيش
-    comportement_professionnel  TEXT,                                            -- السلوك المهني
-    respect_instructions        TEXT,                                            -- احترام التعليمات
-    preparation_pedagogique     TEXT,                                            -- التحضير البيداغوجي
-    strategie_enseignement      TEXT,                                            -- استراتيجية التدريس
-    participation_eleves        TEXT,                                            -- مشاركة التلاميذ
-    gestion_classe              TEXT,                                            -- تدبير الفصل
-    maitrise_contenu            TEXT,                                            -- إتقان المحتوى
-    moyens_didactiques          TEXT,                                            -- الوسائل الديداكتيكية
-    remarques_supplementaires   TEXT,                                            -- ملاحظات إضافية
-    created_at                  TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at                  TEXT,
-    FOREIGN KEY (inspection_id) REFERENCES inspections(id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS evaluation_sections (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    evaluation_id   INTEGER NOT NULL,
+    ordre           INTEGER NOT NULL DEFAULT 0,
+    titre           TEXT    NOT NULL,
+    contenu         TEXT    DEFAULT NULL,
+    FOREIGN KEY (evaluation_id) REFERENCES evaluations(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_observations_inspection ON observations(inspection_id);
+CREATE INDEX IF NOT EXISTS idx_eval_sections_evaluation ON evaluation_sections(evaluation_id);
 
-CREATE TRIGGER IF NOT EXISTS trg_observations_updated_at
-AFTER UPDATE ON observations
-FOR EACH ROW
-BEGIN
-    UPDATE observations SET updated_at = datetime('now') WHERE id = OLD.id;
-END;
+CREATE TABLE IF NOT EXISTS evaluation_subsections (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    section_id INTEGER NOT NULL,
+    ordre      INTEGER NOT NULL DEFAULT 0,
+    type       TEXT    NOT NULL DEFAULT 'texte' CHECK(type IN ('texte','liste')),
+    contenu    TEXT    DEFAULT NULL,
+    FOREIGN KEY (section_id) REFERENCES evaluation_sections(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_eval_subsections_section ON evaluation_subsections(section_id);
+
+CREATE TABLE IF NOT EXISTS evaluation_items (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    subsection_id INTEGER NOT NULL,
+    ordre         INTEGER NOT NULL DEFAULT 0,
+    item          TEXT    NOT NULL,
+    FOREIGN KEY (subsection_id) REFERENCES evaluation_subsections(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_eval_items_subsection ON evaluation_items(subsection_id);

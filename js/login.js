@@ -165,6 +165,7 @@
     const regUsername     = document.getElementById('regUsername');
     const regPassword     = document.getElementById('regPassword');
     const regConfirm      = document.getElementById('regConfirm');
+    const regConsent      = document.getElementById('regConsent');
     const toggleRegBtn    = document.getElementById('toggleRegPassword');
     const regEyeOpen      = document.getElementById('regEyeOpen');
     const regEyeClosed    = document.getElementById('regEyeClosed');
@@ -227,6 +228,10 @@
             setError('grpRegConfirm', 'regConfirmError', 'كلمتا المرور غير متطابقتين');
             valid = false;
         }
+        if (!regConsent.checked) {
+            setError('grpRegConsent', 'regConsentError', 'يرجى الموافقة على سياسة الخصوصية لإتمام إنشاء الحساب');
+            valid = false;
+        }
         if (!valid) return;
 
         setRegLoading(true);
@@ -237,7 +242,7 @@
                 credentials: 'same-origin',
                 headers:     { 'Content-Type': 'application/json' },
                 body:        JSON.stringify({ first_name: firstName, last_name: lastName,
-                                             email, username, password }),
+                                             email, username, password, consent_personal_data: true }),
             });
 
             const data = await res.json();
@@ -255,6 +260,7 @@
                         email:      ['grpRegEmail',  'regEmailError'],
                         username:   ['grpRegUsername','regUsernameError'],
                         password:   ['grpRegPassword','regPasswordError'],
+                        consent_personal_data: ['grpRegConsent', 'regConsentError'],
                     };
                     Object.entries(data.errors).forEach(([key, msg]) => {
                         if (map[key]) setError(...map[key], msg);
@@ -277,9 +283,9 @@
     }
 
     function clearRegErrors() {
-        ['grpFirstName','grpLastName','grpRegEmail','grpRegUsername','grpRegPassword','grpRegConfirm']
+        ['grpFirstName','grpLastName','grpRegEmail','grpRegUsername','grpRegPassword','grpRegConfirm','grpRegConsent']
             .forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('error'); });
-        ['firstNameError','lastNameError','regEmailError','regUsernameError','regPasswordError','regConfirmError']
+        ['firstNameError','lastNameError','regEmailError','regUsernameError','regPasswordError','regConfirmError','regConsentError']
             .forEach(id => { const el = document.getElementById(id); if (el) el.textContent = ''; });
         alertEl.style.display = 'none';
     }

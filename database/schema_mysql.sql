@@ -29,7 +29,6 @@ CREATE TABLE IF NOT EXISTS `personal_info` (
     `gender`                ENUM('ذكر','أنثى') NOT NULL                  COMMENT 'الجنس',
     `phone`                 VARCHAR(20)     NOT NULL                     COMMENT 'رقم الهاتف',
     `email`                 VARCHAR(150)    NOT NULL                     COMMENT 'البريد الإلكتروني',
-    `address`               VARCHAR(255)    NOT NULL                     COMMENT 'العنوان',
     `school_entry_date`     DATE            NOT NULL                     COMMENT 'تاريخ الدخول المدرسي',
     `diploma`               VARCHAR(150)    NOT NULL                     COMMENT 'الشهادة / الدبلوم',
     `first_appointment_date` DATE           DEFAULT NULL                 COMMENT 'تاريخ أول تعيين',
@@ -46,6 +45,7 @@ CREATE TABLE IF NOT EXISTS `personal_info` (
     `current_year_class`    VARCHAR(50)     DEFAULT NULL                 COMMENT 'القسم المُسند هذا العام',
     `student_count`         SMALLINT        DEFAULT NULL                 COMMENT 'عدد التلاميذ',
     `haraka`                ENUM('نعم','لا') DEFAULT NULL                COMMENT 'معني بالحركة',
+    `class_note`            TEXT            DEFAULT NULL                 COMMENT 'ملاحظة نصية للقسم',
     `children_count`        TINYINT         DEFAULT NULL                 COMMENT 'عدد الأطفال',
     `tech_institute_grad_year` VARCHAR(10)  DEFAULT NULL                 COMMENT 'سنة التخرج من المعهد التكنولوجي',
     `university_grad_year`  VARCHAR(10)     DEFAULT NULL                 COMMENT 'سنة التخرج من الجامعة',
@@ -124,26 +124,35 @@ CREATE TABLE IF NOT EXISTS `inspections` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
--- Table des évaluations
--- جدول التقييمات
+-- Table des écoles
+-- جدول المدارس
 -- =============================================
 
-CREATE TABLE IF NOT EXISTS `evaluations` (
-    `id`                    INT             NOT NULL AUTO_INCREMENT,
-    `inspection_id`         INT             NOT NULL                     COMMENT 'معرف التفتيش',
-    `points_forts`          TEXT            DEFAULT NULL                 COMMENT 'نقاط القوة',
-    `points_faibles`        TEXT            DEFAULT NULL                 COMMENT 'نقاط الضعف',
-    `recommandations`       TEXT            DEFAULT NULL                 COMMENT 'التوصيات',
-    `note_finale`           VARCHAR(20)     DEFAULT NULL                 COMMENT 'النقطة النهائية',
-    `created_at`            DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`            DATETIME        DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+CREATE TABLE IF NOT EXISTS `ecole` (
+    `id`           INT          NOT NULL AUTO_INCREMENT,
+    `nom`          VARCHAR(200) NOT NULL                     COMMENT 'اسم المدرسة',
+    `district`     VARCHAR(100) DEFAULT NULL                 COMMENT 'المقاطعة',
+    `code`         VARCHAR(50)  DEFAULT NULL                 COMMENT 'الرمز',
+    `adresse`      VARCHAR(255) DEFAULT NULL                 COMMENT 'العنوان',
+    `ville`        VARCHAR(100) DEFAULT NULL                 COMMENT 'المدينة',
+    `nb_directeur` TINYINT      DEFAULT 0,
+    `nb_sub_dir`   TINYINT      DEFAULT 0,
+    `nb_Prf_arb`   TINYINT      DEFAULT 0,
+    `nb_prf_frc`   TINYINT      DEFAULT 0,
+    `nb_prf_ang`   TINYINT      DEFAULT 0,
+    `nb_prf_sprt`  TINYINT      DEFAULT 0,
+    `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`   DATETIME     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    KEY `idx_evaluations_inspection` (`inspection_id`),
-
-    CONSTRAINT `fk_evaluations_inspection`
-        FOREIGN KEY (`inspection_id`) REFERENCES `inspections` (`id`) ON DELETE CASCADE
+    UNIQUE KEY `idx_ecole_nom` (`nom`)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Données initiales
+INSERT IGNORE INTO `ecole` (`nom`) VALUES
+    ('مدرسة نورالدين زنكي'),
+    ('مدرسة أبوبكر الصديق'),
+    ('مدرسة عمرالفاروق');
 
 SET FOREIGN_KEY_CHECKS = 1;

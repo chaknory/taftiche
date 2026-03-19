@@ -6,578 +6,7 @@
     <title>لوحة الإدارة – مديرية التربية بسكرة</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* ── Admin layout ─────────────────────────────────────────────── */
-        body {
-            align-items: stretch;
-            padding: 0;
-        }
-
-        .admin-wrapper {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            width: 100%;
-        }
-
-        /* Top bar */
-        .admin-topbar {
-            background: var(--primary-color);
-            color: #fff;
-            padding: 12px 28px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.2);
-        }
-
-        .admin-topbar .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .admin-topbar .brand h2 {
-            font-size: 1.05rem;
-            font-weight: 700;
-            margin: 0;
-            line-height: 1.3;
-        }
-
-        .admin-topbar .brand small {
-            font-size: .75rem;
-            opacity: .75;
-            display: block;
-        }
-
-        .admin-topbar .top-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .admin-topbar .user-badge {
-            font-size: .85rem;
-            background: rgba(255,255,255,.12);
-            border-radius: 20px;
-            padding: 4px 14px;
-        }
-
-        .btn-logout {
-            background: var(--error-color);
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 7px 16px;
-            font-family: var(--font-family);
-            font-size: .85rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .btn-logout:hover { background: #a93226; }
-
-        /* Main content */
-        .admin-main {
-            flex: 1;
-            padding: 28px 24px;
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        /* Stats cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 22px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0; right: 0; left: 0;
-            height: 4px;
-        }
-
-        .stat-card.blue::before   { background: var(--primary-color); }
-        .stat-card.gold::before   { background: var(--accent-color); }
-        .stat-card.green::before  { background: var(--success-color); }
-
-        .stat-card .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        .stat-card .stat-label {
-            font-size: .82rem;
-            color: var(--text-light);
-            text-align: center;
-        }
-
-        /* Tabs */
-        .admin-tabs {
-            display: flex;
-            gap: 4px;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-
-        .admin-tab {
-            padding: 10px 22px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            font-family: var(--font-family);
-            font-size: .9rem;
-            font-weight: 600;
-            color: var(--text-light);
-            cursor: pointer;
-            transition: var(--transition);
-            border-radius: 4px 4px 0 0;
-        }
-
-        .admin-tab:hover { color: var(--primary-color); background: rgba(26,58,92,.05); }
-
-        .admin-tab.active {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-        }
-
-        .admin-panel { display: none; }
-        .admin-panel.active { display: block; }
-
-        /* Table */
-        .tbl-wrapper {
-            overflow-x: auto;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: .85rem;
-        }
-
-        thead th {
-            background: var(--primary-color);
-            color: #fff;
-            padding: 12px 14px;
-            text-align: right;
-            white-space: nowrap;
-            font-weight: 600;
-        }
-
-        tbody tr { transition: background .15s; }
-        tbody tr:nth-child(even) { background: #f7f9fc; }
-        tbody tr:hover { background: #eef2f8; }
-
-        tbody td {
-            padding: 10px 14px;
-            border-bottom: 1px solid #eee;
-            vertical-align: middle;
-        }
-
-        /* Badges */
-        .badge {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: .75rem;
-            font-weight: 600;
-        }
-
-        .badge-admin  { background: #ebf4ff; color: #1a3a5c; }
-        .badge-user   { background: #f0fff4; color: #27ae60; }
-        .badge-active { background: #f0fff4; color: #27ae60; }
-        .badge-off    { background: #fff5f5; color: #c0392b; }
-
-        /* Action buttons in table */
-        .btn-action {
-            padding: 4px 10px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-family: var(--font-family);
-            font-size: .78rem;
-            font-weight: 600;
-            transition: var(--transition);
-            margin: 0 2px;
-        }
-
-        .btn-del   { background: #fff5f5; color: var(--error-color); }
-        .btn-del:hover   { background: var(--error-color); color: #fff; }
-        .btn-pdf   { background: #f0fff4; color: #1a7340; }
-        .btn-pdf:hover   { background: #1a7340; color: #fff; }
-        .btn-view  { background: var(--primary-color); color: #fff; }
-        .btn-view:hover  { background: var(--primary-dark); }
-
-        /* Toast */
-        .admin-toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            background: var(--primary-dark);
-            color: #fff;
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-size: .9rem;
-            box-shadow: 0 4px 16px rgba(0,0,0,.2);
-            transition: transform .3s ease;
-            z-index: 1000;
-            pointer-events: none;
-        }
-
-        .admin-toast.show { transform: translateX(-50%) translateY(0); }
-        .admin-toast.success { border-right: 4px solid var(--success-color); }
-        .admin-toast.error   { border-right: 4px solid var(--error-color); }
-
-        /* Loading overlay */
-        .loading-overlay {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-            color: var(--text-light);
-            font-size: .9rem;
-        }
-
-        /* Toolbar */
-        .tbl-toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .tbl-toolbar h3 { font-size: 1rem; color: var(--primary-color); margin: 0; }
-
-        .tbl-search {
-            padding: 7px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-family: var(--font-family);
-            font-size: .85rem;
-            width: 220px;
-            background: #fff;
-            direction: rtl;
-        }
-
-        .tbl-search:focus { outline: none; border-color: var(--border-focus); }
-
-        /* Modal */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.45);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 900;
-            padding: 16px;
-        }
-
-        .modal-backdrop.hidden { display: none; }
-
-        .modal-box {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 8px 32px rgba(0,0,0,.18);
-            padding: 28px 24px;
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-        }
-
-        .modal-box h3 { margin-bottom: 10px; color: var(--primary-color); }
-        .modal-box p  { color: var(--text-light); font-size: .9rem; margin-bottom: 22px; }
-
-        .modal-actions { display: flex; gap: 10px; justify-content: center; }
-
-        .btn-confirm-del {
-            background: var(--error-color); color: #fff;
-            border: none; padding: 9px 22px; border-radius: 6px;
-            font-family: var(--font-family); font-size: .9rem;
-            cursor: pointer; font-weight: 600;
-        }
-
-        .btn-cancel {
-            background: #eee; color: var(--text-color);
-            border: none; padding: 9px 22px; border-radius: 6px;
-            font-family: var(--font-family); font-size: .9rem;
-            cursor: pointer;
-        }
-
-        .btn-edit  { background: #ebf4ff; color: var(--primary-color); }
-        .btn-edit:hover  { background: var(--primary-color); color: #fff; }
-
-        /* ── Edit modal ─────────────────────────────────────────────── */
-        .edit-modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.52);
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            z-index: 950;
-            padding: 20px 12px 40px;
-            overflow-y: auto;
-        }
-        .edit-modal-backdrop.hidden { display: none; }
-
-        .edit-modal-box {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 8px 40px rgba(0,0,0,.22);
-            max-width: 820px;
-            width: 100%;
-            margin: auto;
-        }
-
-        .edit-modal-header {
-            background: var(--primary-color);
-            color: #fff;
-            padding: 16px 22px;
-            border-radius: 10px 10px 0 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .edit-modal-header h3 { margin: 0; font-size: 1rem; }
-        .edit-modal-close {
-            background: none; border: none; color: #fff;
-            font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0 4px;
-        }
-
-        .edit-modal-body { padding: 22px 24px; }
-
-        .edit-section-title {
-            font-size: .78rem;
-            font-weight: 700;
-            color: var(--accent-color);
-            text-transform: uppercase;
-            margin: 18px 0 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #eee;
-        }
-        .edit-section-title:first-child { margin-top: 0; }
-
-        .edit-row {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .edit-field {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .edit-field label {
-            font-size: .78rem;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .edit-field input,
-        .edit-field select {
-            padding: 7px 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-family: var(--font-family);
-            font-size: .84rem;
-            color: var(--text-color);
-            background: #fff;
-            direction: rtl;
-            width: 100%;
-        }
-        .edit-field input.ltr-input { direction: ltr; text-align: left; }
-        .edit-field input[type=date] { direction: ltr; text-align: left; }
-        .edit-field input:focus, .edit-field select:focus {
-            outline: none;
-            border-color: var(--border-focus);
-        }
-
-        .field-error {
-            font-size: .74rem;
-            color: var(--error-color);
-            display: none;
-        }
-        .edit-field.has-error input,
-        .edit-field.has-error select { border-color: var(--error-color); }
-        .edit-field.has-error .field-error { display: block; }
-
-        .edit-modal-footer {
-            padding: 14px 22px;
-            border-top: 1px solid #eee;
-            display: flex;
-            gap: 10px;
-            justify-content: flex-start;
-            border-radius: 0 0 10px 10px;
-        }
-
-        .btn-save {
-            background: var(--primary-color); color: #fff;
-            border: none; padding: 9px 26px; border-radius: 6px;
-            font-family: var(--font-family); font-size: .9rem;
-            cursor: pointer; font-weight: 600; transition: var(--transition);
-        }
-        .btn-save:hover   { background: var(--primary-dark); }
-        .btn-save:disabled { opacity: .6; cursor: not-allowed; }
-
-        /* Add-record / Add-user button */
-        .btn-add-user {
-            background: var(--primary-color);
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 7px 16px;
-            font-family: var(--font-family);
-            font-size: .85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            white-space: nowrap;
-        }
-        .btn-add-user:hover { background: var(--primary-dark); }
-
-        /* Import Excel button */
-        .btn-import-excel {
-            background: #157347;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 7px 16px;
-            font-family: var(--font-family);
-            font-size: .85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            white-space: nowrap;
-        }
-        .btn-import-excel:hover { background: #0f5132; }
-
-        /* ── Import modal ───────────────────────────────────────────── */
-        .import-modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.52);
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            z-index: 950;
-            padding: 20px 12px 40px;
-            overflow-y: auto;
-        }
-        .import-modal-backdrop.hidden { display: none; }
-        .import-modal-box {
-            background: #fff;
-            border-radius: 12px;
-            width: min(820px, 100%);
-            box-shadow: 0 8px 32px rgba(0,0,0,.18);
-            display: flex;
-            flex-direction: column;
-        }
-        .import-drop-zone {
-            border: 2px dashed #cdd3da;
-            border-radius: 8px;
-            padding: 28px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color .2s, background .2s;
-            margin-bottom: 16px;
-        }
-        .import-drop-zone.drag-over {
-            border-color: #157347;
-            background: #f0faf5;
-        }
-        .import-drop-zone p { margin: 6px 0; color: #555; font-size: .9rem; }
-        .import-drop-zone .drop-icon { font-size: 2.4rem; display: block; margin-bottom: 4px; }
-        .import-preview-wrap {
-            max-height: 340px;
-            overflow: auto;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            font-size: .78rem;
-        }
-        .import-preview-wrap table { border-collapse: collapse; width: 100%; }
-        .import-preview-wrap th,
-        .import-preview-wrap td {
-            border: 1px solid #dee2e6;
-            padding: 4px 8px;
-            white-space: nowrap;
-            text-align: right;
-        }
-        .import-preview-wrap th { background: #1f5a8c; color: #fff; position: sticky; top: 0; }
-        .import-preview-wrap tr:nth-child(even) td { background: #f8f9fa; }
-        .import-status-bar {
-            margin-top: 12px;
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: .85rem;
-            display: none;
-        }
-        .import-status-bar.info  { background:#d1ecf1; color:#0c5460; display:block; }
-        .import-status-bar.success { background:#d4edda; color:#155724; display:block; }
-        .import-status-bar.error { background:#f8d7da; color:#721c24; display:block; }
-        .import-errors-list { max-height: 140px; overflow-y: auto; margin-top: 8px; font-size:.8rem; }
-        .import-errors-list li { margin-bottom: 4px; }
-
-        /* Add-user modal reuses edit-modal styles */
-        .add-user-modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.52);
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            z-index: 950;
-            padding: 20px 12px 40px;
-            overflow-y: auto;
-        }
-        .add-user-modal-backdrop.hidden { display: none; }
-        .add-user-modal-box {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 8px 40px rgba(0,0,0,.22);
-            max-width: 560px;
-            width: 100%;
-            margin: auto;
-        }
-
-        @media (max-width: 600px) {
-            .admin-topbar { padding: 10px 14px; }
-            .admin-main   { padding: 16px 10px; }
-            .admin-tab    { padding: 8px 12px; font-size: .8rem; }
-            .edit-field   { min-width: 100%; }
-        }
-    </style>
+    <link rel="stylesheet" href="css/admin-page.css">
 </head>
 <body>
 <div class="admin-wrapper">
@@ -622,10 +51,24 @@
         <!-- Tabs -->
         <div class="admin-tabs" role="tablist">
             <button class="admin-tab active" data-tab="tabRecords" role="tab">
-                البطاقات الشخصية
+            <span class="tab-icon" aria-hidden="true">🪪</span>
+            <span>البطاقات الشخصية</span>
             </button>
             <button class="admin-tab" data-tab="tabUsers" role="tab">
-                المستخدمون
+            <span class="tab-icon" aria-hidden="true">👥</span>
+            <span>المستخدمون</span>
+            </button>
+            <button class="admin-tab" data-tab="tabInspections" role="tab">
+            <span class="tab-icon" aria-hidden="true">🧭</span>
+            <span>زيارات التفتيش</span>
+            </button>
+
+            <button class="admin-tab" data-tab="tabSchools" role="tab">
+                🏫 المدارس
+            </button>
+            <button class="admin-tab" data-tab="tabEvaluations" role="tab">
+                <span class="tab-icon" aria-hidden="true">📊</span>
+                <span>التقييمات</span>
             </button>
         </div>
 
@@ -633,7 +76,7 @@
         <div class="admin-panel active" id="tabRecords">
             <div class="tbl-toolbar">
                 <h3>قائمة البطاقات الشخصية</h3>
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <div class="toolbar-actions">
                     <input type="search" class="tbl-search" id="searchRecords"
                            placeholder="بحث بالاسم أو المدرسة…">
                     <button class="btn-import-excel" id="openImportBtn">⬆ استيراد من Excel</button>
@@ -663,11 +106,45 @@
             </div>
         </div>
 
+        <!-- Panel: inspections / زيارات التفتيش -->
+        <div class="admin-panel" id="tabInspections">
+            <div class="tbl-toolbar">
+                <h3>قائمة زيارات التفتيش</h3>
+                <div class="toolbar-actions">
+                    <input type="search" class="tbl-search" id="searchInspections"
+                           placeholder="بحث بالاسم أو المدرسة أو المادة…">
+                    <button class="btn-add-user" id="openAddInspectionBtn">+ إضافة زيارة</button>
+                </div>
+            </div>
+            <div class="tbl-wrapper">
+                <div class="loading-overlay" id="loadingInspections">جارٍ التحميل…</div>
+                <table id="tblInspections" style="display:none">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>الأستاذ / الأستاذة</th>
+                            <th>المدرسة</th>
+                            <th>اسم المفتش</th>
+                            <th>تاريخ الزيارة</th>
+                            <th>ساعة الزيارة</th>
+                            <th>مدة الزيارة</th>
+                            <th>المادة</th>
+                            <th>تاريخ الإنشاء</th>
+                            <th colspan="2">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyInspections"></tbody>
+                </table>
+            </div>
+        </div>
+
+
+
         <!-- Panel: users -->
         <div class="admin-panel" id="tabUsers">
             <div class="tbl-toolbar">
                 <h3>قائمة المستخدمين</h3>
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <div class="toolbar-actions">
                     <input type="search" class="tbl-search" id="searchUsers"
                            placeholder="بحث بالاسم أو البريد…">
                     <button class="btn-add-user" id="openAddUserBtn">+ إضافة مستخدم</button>
@@ -693,10 +170,72 @@
             </div>
         </div>
 
+        <!-- Panel: evaluations / التقييمات -->
+        <div class="admin-panel" id="tabEvaluations">
+            <div class="tbl-toolbar">
+                <h3>قائمة التقييمات</h3>
+                <div class="toolbar-actions">
+                    <input type="search" class="tbl-search" id="searchEvaluations"
+                           placeholder="بحث بالعنوان أو الأستاذ أو المدرسة…">
+                    <button class="btn-add-user" id="openAddEvalBtn">+ إضافة تقييم</button>
+                </div>
+            </div>
+            <div class="tbl-wrapper">
+                <div class="loading-overlay" id="loadingEvaluations">جارٍ التحميل…</div>
+                <table id="tblEvaluations" style="display:none">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>عنوان التقييم</th>
+                            <th>الأستاذ / الأستاذة</th>
+                            <th>المدرسة</th>
+                            <th>تاريخ الزيارة</th>
+                            <th>العلامة</th>
+                            <th>تاريخ الإنشاء</th>
+                            <th colspan="3">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyEvaluations"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Panel: schools / المدارس -->
+        <div class="admin-panel" id="tabSchools">
+            <div class="tbl-toolbar">
+                <h3>قائمة المدارس</h3>
+                <div class="toolbar-actions">
+                    <input type="search" class="tbl-search" id="searchSchools"
+                           placeholder="بحث باسم المدرسة…">
+                    <button class="btn-add-user" id="openAddSchoolBtn">+ إضافة مدرسة</button>
+                </div>
+            </div>
+            <div class="tbl-wrapper">
+                <table id="tblSchools">
+                    <thead>
+                        <tr>
+                            <th>#</th>                           
+                            <th>اسم المدرسة</th>
+                            <th>المقاطعة</th>
+                            <th>العنوان</th>
+                            <th>المدينة</th>
+                            <th>م.مدير</th>
+                            <th>م.نائب</th>
+                            <th>أ.عربية</th>
+                            <th>أ.فرنسية</th>
+                            <th>أ.إنجليزية</th>
+                            <th>أ.رياضة</th>
+                            <th colspan="2">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodySchools"></tbody>
+                </table>
+            </div>
+        </div>
+
     </main>
 </div>
 
-<!-- Toast -->
 <div class="admin-toast" id="toast"></div>
 
 <!-- ── Modal : عرض / تعديل البطاقة الشخصية ──────────────────────────── -->
@@ -725,9 +264,6 @@
             <label>اسم المدرسة</label>
             <select id="ef_school_name">
               <option value="">-- اختر --</option>
-              <option value="مدرسة نورالدين زنكي">مدرسة نورالدين زنكي</option>
-              <option value="مدرسة أبوبكر الصديق">مدرسة أبوبكر الصديق</option>
-              <option value="مدرسة عمرالفاروق">مدرسة عمرالفاروق</option>
             </select>
           </div>
           <div class="edit-field">
@@ -805,19 +341,6 @@
             <span class="field-error" id="ef_email_err">البريد الإلكتروني غير صالح أو مستخدم</span>
           </div>
           <div class="edit-field" style="flex:2">
-            <label>العنوان</label>
-            <input id="ef_address" type="text" maxlength="200">
-          </div>
-        </div>
-
-        <!-- المسار المهني -->
-        <div class="edit-section-title">المسار المهني</div>
-        <div class="edit-row">
-          <div class="edit-field">
-            <label>تاريخ التعيين بالمدرسة</label>
-            <input id="ef_school_entry_date" type="date">
-          </div>
-          <div class="edit-field">
             <label>الشهادة / الدبلوم</label>
             <input id="ef_diploma" type="text" maxlength="100">
           </div>
@@ -829,11 +352,21 @@
         <div class="edit-row">
           <div class="edit-field">
             <label>الرتبة</label>
-            <input id="ef_job_rank" type="text" maxlength="100">
+            <select id="ef_job_rank">
+              <option value="">--</option>
+            </select>
           </div>
-          <div class="edit-field">
-            <label>الوضعية</label>
-            <input id="ef_status" type="text" maxlength="100">
+            <div class="edit-field">
+            <label for="ef_status">
+              <span class="label-text">الصفة</span>
+            </label>
+            <select id="ef_status" name="status">
+                    <option value="">-- اختر الصفة --</option>
+                    <option value="متربص(ة)">متربص(ة)</option>
+                    <option value="مرسم(ة)">مرسم(ة)</option>
+                    <option value="متعاقد(ة)">متعاقد(ة)</option>
+                </select>
+                    <span class="field-error" id="ef_status_err"></span>
           </div>
           <div class="edit-field">
             <label>السلم </label>
@@ -898,6 +431,12 @@
               <option value="نعم">نعم</option>
               <option value="لا">لا</option>
             </select>
+          </div>
+        </div>
+        <div class="edit-row">
+          <div class="edit-field" style="flex:1">
+            <label>ملاحظة نصية للقسم</label>
+            <textarea id="ef_class_note" rows="3" style="width:100%;resize:vertical;"></textarea>
           </div>
         </div>
 
@@ -1009,9 +548,6 @@
             <label>اسم المدرسة *</label>
             <select id="ar_school_name" required>
               <option value="">-- اختر --</option>
-              <option value="مدرسة نورالدين زنكي">مدرسة نورالدين زنكي</option>
-              <option value="مدرسة أبوبكر الصديق">مدرسة أبوبكر الصديق</option>
-              <option value="مدرسة عمرالفاروق">مدرسة عمرالفاروق</option>
             </select>
             <span class="field-error" id="ar_school_name_err">اسم المدرسة مطلوب</span>
           </div>
@@ -1097,16 +633,6 @@
             <span class="field-error" id="ar_email_err">البريد الإلكتروني غير صالح أو مستخدم</span>
           </div>
           <div class="edit-field" style="flex:2">
-            <label>العنوان *</label>
-            <input id="ar_address" type="text" maxlength="200" required placeholder="العنوان الكامل">
-            <span class="field-error" id="ar_address_err">العنوان مطلوب</span>
-          </div>
-        </div>
-
-        <!-- المسار المهني -->
-        <div class="edit-section-title">المسار المهني</div>
-        <div class="edit-row">
-          <div class="edit-field">
             <label>الشهادة / الدبلوم *</label>
             <input id="ar_diploma" type="text" maxlength="150" required placeholder="ليسانس، ماستر…">
             <span class="field-error" id="ar_diploma_err">الشهادة مطلوبة</span>
@@ -1125,11 +651,6 @@
             <label>الرتبة</label>
             <select id="ar_job_rank">
               <option value="">-- اختر --</option>
-              <option value="أستاذ تعليم إبتدائي قسم أول">أستاذ تعليم إبتدائي قسم أول</option>
-              <option value="أستاذ تعليم إبتدائي قسم ثاني">أستاذ تعليم إبتدائي قسم ثاني</option>
-              <option value="أستاذ تعليم إبتدائي مميز">أستاذ تعليم إبتدائي مميز</option>
-              <option value="أستاذ تعليم إبتدائي متربص">أستاذ تعليم إبتدائي متربص</option>
-              <option value="أستاذ تعليم إبتدائي متعاقد">أستاذ تعليم إبتدائي متعاقد</option>
             </select>
           </div>
           <div class="edit-field">
@@ -1224,6 +745,12 @@
             </select>
           </div>
         </div>
+        <div class="edit-row">
+          <div class="edit-field" style="flex:1">
+            <label>ملاحظة نصية للقسم</label>
+            <textarea id="ar_class_note" rows="3" style="width:100%;resize:vertical;" placeholder="ملاحظات حول القسم..."></textarea>
+          </div>
+        </div>
 
         <!-- التأهيل -->
         <div class="edit-section-title">التأهيل</div>
@@ -1247,6 +774,310 @@
   </div>
 </div>
 
+<!-- ── Modal : ملاحظة الزيارة (إضافة / تعديل) ───────────────────── -->
+<div class="edit-modal-backdrop hidden" id="obsModal">
+  <div class="edit-modal-box" style="max-width:680px">
+    <div class="edit-modal-header">
+      <h3 id="obsModalTitle">إضافة ملاحظة زيارة</h3>
+      <button class="edit-modal-close" id="obsModalClose" title="إغلاق">×</button>
+    </div>
+    <form id="obsForm" novalidate>
+      <input type="hidden" id="obs_id">
+      <div class="edit-modal-body">
+
+        <div class="edit-section-title">اختيار الزيارة</div>
+        <div class="edit-row">
+          <div class="edit-field" id="obs_insp_field" style="flex:2">
+            <label>زيارة التفتيش *</label>
+            <select id="obs_inspection_id" required>
+              <option value="">-- اختر الزيارة --</option>
+            </select>
+            <span class="field-error" id="obs_insp_err">يرجى اختيار الزيارة</span>
+          </div>
+        </div>
+
+        <div class="edit-section-title">ملاحظات الحصة</div>
+        <div class="edit-row">
+          <div class="edit-field">
+            <label>السلوك المهني</label>
+            <textarea id="obs_comportement_professionnel" maxlength="500" rows="2" placeholder="ملاحظة..."></textarea>
+          </div>
+          <div class="edit-field">
+            <label>احترام التعليمات</label>
+            <textarea id="obs_respect_instructions" maxlength="500" rows="2" placeholder="ملاحظة..."></textarea>
+          </div>
+        </div>
+        <div class="edit-row">
+          <div class="edit-field">
+            <label>الإعداد البيداغوجي</label>
+            <textarea id="obs_preparation_pedagogique" maxlength="500" rows="2" placeholder="ملاحظة..."></textarea>
+          </div>
+          <div class="edit-field">
+            <label>استراتيجية التدريس</label>
+            <textarea id="obs_strategie_enseignement" maxlength="500" rows="2" placeholder="ملاحظة..."></textarea>
+          </div>
+        </div>
+        <div class="edit-row">
+          <div class="edit-field">
+            <label>مشاركة التلاميذ</label>
+            <textarea id="obs_participation_eleves" maxlength="500" rows="2" placeholder="ملاحظة..."></textarea>
+          </div>
+          <div class="edit-field">
+            <label>تسيير القسم</label>
+            <textarea id="obs_gestion_classe" maxlength="500" rows="2" placeholder="ملاحظة..."></textarea>
+          </div>
+        </div>
+        <div class="edit-row">
+          <div class="edit-field">
+            <label>إتقان المحتوى</label>
+            <textarea id="obs_maitrise_contenu" maxlength="500" rows="2" placeholder="ملاحظة..."></textarea>
+          </div>
+          <div class="edit-field">
+            <label>الوسائل البيداغوجية</label>
+            <textarea id="obs_moyens_didactiques" maxlength="500" rows="2" placeholder="ملاحظة..."></textarea>
+          </div>
+        </div>
+        <div class="edit-row">
+          <div class="edit-field" style="flex:2">
+            <label>ملاحظات إضافية</label>
+            <textarea id="obs_remarques_supplementaires" maxlength="1000" rows="3" placeholder="ملاحظات إضافية..."></textarea>
+          </div>
+        </div>
+
+      </div>
+      <div class="edit-modal-footer">
+        <button type="submit" class="btn-save" id="obsSaveBtn">حفظ الملاحظة</button>
+        <button type="button" class="btn-cancel" id="obsCancelBtn">إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Modal : إضافة / تعديل تقييم ─────────────────────────────── -->
+<div class="edit-modal-backdrop hidden" id="evalModal">
+  <div class="edit-modal-box" style="max-width:720px">
+    <div class="edit-modal-header">
+      <h3 id="evalModalTitle">إضافة تقييم</h3>
+      <button class="edit-modal-close" id="evalModalClose" title="إغلاق">×</button>
+    </div>
+    <form id="evalForm" novalidate>
+      <input type="hidden" id="eval_id">
+      <div class="edit-modal-body">
+
+        <div class="edit-section-title">معلومات التقييم</div>
+        <div class="edit-row">
+          <div class="edit-field" id="eval_titre_field" style="flex:2">
+            <label>عنوان التقييم *</label>
+            <input id="eval_titre" type="text" maxlength="200" placeholder="مثال: تقييم زيارة أكتوبر" required>
+            <span class="field-error" id="eval_titre_err">عنوان التقييم مطلوب</span>
+          </div>
+          <div class="edit-field" id="eval_note_field">
+            <label>العلامة الإجمالية <small style="font-weight:400;color:#888">(0–20)</small></label>
+            <input id="eval_note_finale" type="number" min="0" max="20" step="0.25" placeholder="0.00" class="ltr-input">
+            <span class="field-error" id="eval_note_err">العلامة يجب أن تكون بين 0 و 20</span>
+          </div>
+        </div>
+        <div class="edit-row">
+          <div class="edit-field" id="eval_insp_field" style="flex:2">
+            <label>زيارة التفتيش *</label>
+            <select id="eval_inspection_id" required>
+              <option value="">-- اختر الزيارة --</option>
+            </select>
+            <span class="field-error" id="eval_insp_err">يرجى اختيار زيارة التفتيش</span>
+          </div>
+        </div>
+
+        <!-- Sections dynamiques -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;margin-bottom:8px">
+          <div class="edit-section-title" style="margin:0">الأقسام</div>
+          <button type="button" class="btn-add-user" id="addEvalSectionBtn"
+                  style="padding:5px 14px;font-size:.82rem">+ إضافة قسم</button>
+        </div>
+        <div id="eval_sections_container"></div>
+        <p id="eval_sections_empty" style="color:#94a3b8;font-size:.84rem;text-align:center;padding:10px 0">
+          لا توجد أقسام بعد — اضغط على «+ إضافة قسم»
+        </p>
+
+      </div>
+      <div class="edit-modal-footer">
+        <button type="submit" class="btn-save" id="evalSaveBtn">حفظ التقييم</button>
+        <button type="button" class="btn-cancel" id="evalCancelBtn">إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Modal : إضافة / تعديل زيارة تفتيش ─────────────────────────── -->
+<div class="edit-modal-backdrop hidden" id="inspectionModal">
+  <div class="edit-modal-box" style="max-width:780px">
+    <div class="edit-modal-header">
+      <h3 id="inspectionModalTitle">إضافة زيارة تفتيش</h3>
+      <button class="edit-modal-close" id="inspectionModalClose" title="إغلاق">×</button>
+    </div>
+    <form id="inspectionForm" novalidate>
+      <input type="hidden" id="insp_id">
+      <input type="hidden" id="insp_personal_info_id">
+      <div class="edit-modal-body">
+
+        <div class="edit-section-title">بيانات الأستاذ</div>
+        <div class="edit-row">
+          <div class="edit-field" id="insp_teacher_field" style="flex:2">
+            <label>الأستاذ / الأستاذة *</label>
+            <select id="insp_teacher_select" required>
+              <option value="">-- اختر الأستاذ --</option>
+            </select>
+            <span class="field-error" id="insp_teacher_err">يرجى اختيار الأستاذ/الأستاذة</span>
+          </div>
+        </div>
+                <div class="edit-row">
+                    <div class="teacher-info-card hidden" id="insp_teacher_info" aria-live="polite">
+                        <div class="teacher-info-grid">
+                            <div class="teacher-info-item">
+                                <span class="k">الأستاذ / الأستاذة</span>
+                                <span class="v" id="insp_teacher_fullname">—</span>
+                            </div>
+                            <div class="teacher-info-item">
+                                <span class="k">المؤهل العلمي</span>
+                                <span class="v" id="insp_teacher_diploma">—</span>
+                            </div>
+                            <div class="teacher-info-item">
+                                <span class="k">الدرجة</span>
+                                <span class="v" id="insp_teacher_grade">—</span>
+                            </div>
+                            <div class="teacher-info-item">
+                                <span class="k">السلم</span>
+                                <span class="v" id="insp_teacher_echelon">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+        <div class="edit-section-title">بيانات الزيارة</div>
+        <div class="edit-row">
+          <div class="edit-field" id="insp_inspector_field">
+            <label>اسم المفتش *</label>
+            <input id="insp_inspector_name" type="text" maxlength="100" placeholder="الاسم الكامل للمفتش" required>
+            <span class="field-error" id="insp_inspector_err">اسم المفتش مطلوب</span>
+          </div>
+          <div class="edit-field" id="insp_date_field">
+            <label>تاريخ الزيارة *</label>
+            <input id="insp_inspection_date" type="date" required>
+            <span class="field-error" id="insp_date_err">تاريخ الزيارة مطلوب</span>
+          </div>
+        </div>
+                <div class="edit-row">
+                    <div class="edit-field" id="insp_time_field">
+                        <label>ساعة الزيارة</label>
+                        <input id="insp_heure_visite" type="time" step="60" placeholder="hh:mm" class="ltr-input">
+                        <span class="field-error" id="insp_time_err">تنسيق الساعة يجب أن يكون hh:mm</span>
+                    </div>
+                    <div class="edit-field" id="insp_duration_field">
+                        <label>مدة الزيارة</label>
+                        <input id="insp_duree_visite" type="number" min="30" step="15" value="45" placeholder="60" class="ltr-input">
+                        <span class="field-error" id="insp_duration_err">مدة الزيارة يجب أن تكون رقمًا</span>
+                    </div>
+                </div>
+        <div class="edit-row">
+          <div class="edit-field" style="flex:2">
+            <label>اسم المدرسة</label>
+            <select id="insp_school_name">
+              <option value="">-- اختر --</option>
+            </select>
+          </div>
+          <div class="edit-field">
+            <label>المادة / الحصة</label>
+            <input id="insp_subject" type="text" maxlength="100" placeholder="مثال: اللغة العربية">
+          </div>
+        </div>
+
+        <!-- ── شبكة الملاحظة ── -->
+        <div id="insp_obs_section">
+          <div class="edit-section-title" style="margin-top:16px">شبكة الملاحظة</div>
+          <div id="insp_obs_loading" style="text-align:center;padding:12px;color:var(--text-light);font-size:.85rem">جارٍ تحميل شبكة الملاحظة…</div>
+          <div id="insp_obs_grid"></div>
+        </div>
+
+      </div>
+      <div class="edit-modal-footer">
+        <button type="submit" class="btn-save" id="inspectionSaveBtn">حفظ الزيارة</button>
+        <button type="button" class="btn-cancel" id="inspectionCancelBtn">إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Modal : إضافة / تعديل مدرسة ──────────────────────────────────── -->
+<div class="edit-modal-backdrop hidden" id="schoolModal">
+  <div class="edit-modal-box" style="max-width:700px">
+    <div class="edit-modal-header">
+      <h3 id="schoolModalTitle">إضافة مدرسة</h3>
+      <button class="edit-modal-close" id="schoolModalClose" title="إغلاق">×</button>
+    </div>
+    <form id="schoolForm" novalidate>
+      <input type="hidden" id="school_id">
+      <div class="edit-modal-body">
+        <div class="edit-section-title">معلومات المدرسة</div>
+        <div class="edit-row">
+          <div class="edit-field">
+            <label>المقاطعة</label>
+                        <input id="school_district_input" type="text" maxlength="100" placeholder="اكتب اسم المقاطعة">
+          </div>
+          <div class="edit-field" id="school_name_field" style="flex:2">
+            <label>اسم المدرسة *</label>
+            <input id="school_name_input" type="text" maxlength="200" required placeholder="أدخل اسم المدرسة">
+            <span class="field-error" id="school_name_err">اسم المدرسة مطلوب</span>
+          </div>
+          <div class="edit-field">
+            <label>الرمز</label>
+            <input id="school_code_input" type="text" maxlength="50" placeholder="الرمز">
+          </div>
+        </div>
+        <div class="edit-row">
+          <div class="edit-field" style="flex:2">
+            <label>العنوان</label>
+            <input id="school_adresse_input" type="text" maxlength="255" placeholder="العنوان">
+          </div>
+          <div class="edit-field">
+            <label>المدينة</label>
+            <input id="school_ville_input" type="text" maxlength="100" placeholder="المدينة">
+          </div>
+        </div>
+        <div class="edit-section-title">الأطر البشرية</div>
+        <div class="edit-row">
+          <div class="edit-field">
+            <label>عدد المديرين</label>
+            <input id="school_nb_directeur" type="number" min="0" max="99" value="0">
+          </div>
+          <div class="edit-field">
+            <label>عدد النواب</label>
+            <input id="school_nb_sub_dir" type="number" min="0" max="99" value="0">
+          </div>
+          <div class="edit-field">
+            <label>أ. اللغة العربية</label>
+            <input id="school_nb_prf_arb" type="number" min="0" max="999" value="0">
+          </div>
+          <div class="edit-field">
+            <label>أ. الفرنسية</label>
+            <input id="school_nb_prf_frc" type="number" min="0" max="999" value="0">
+          </div>
+          <div class="edit-field">
+            <label>أ. الإنجليزية</label>
+            <input id="school_nb_prf_ang" type="number" min="0" max="999" value="0">
+          </div>
+          <div class="edit-field">
+            <label>أ. التربية البدنية</label>
+            <input id="school_nb_prf_sprt" type="number" min="0" max="999" value="0">
+          </div>
+        </div>
+      </div>
+      <div class="edit-modal-footer">
+        <button type="submit" class="btn-save" id="schoolSaveBtn">حفظ</button>
+        <button type="button" class="btn-cancel" id="schoolCancelBtn">إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal de confirmation suppression -->
 <div class="modal-backdrop hidden" id="deleteModal">
     <div class="modal-box">
@@ -1258,10 +1089,6 @@
         </div>
     </div>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <!-- ── Modal : Importation Excel ─────────────────────────────────── -->
 <div class="import-modal-backdrop hidden" id="importModal">
@@ -1299,1032 +1126,14 @@
   </div>
 </div>
 
-<script>
-(function () {
-    'use strict';
-
-    // ── Auth guard: admin only ─────────────────────────────────────────────
-    let currentAdmin = null;
-
-    async function bootAdmin() {
-        try {
-            const res  = await fetch('api/auth/session.php', { credentials: 'same-origin' });
-            const data = await res.json();
-
-            if (!data.success) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            if (data.user.role !== 'admin') {
-                // Regular user → redirect to index
-                window.location.href = 'index.html';
-                return;
-            }
-
-            currentAdmin = data.user;
-            document.getElementById('adminBadge').textContent =
-                (data.user.first_name || '') + ' ' + (data.user.last_name || '') || data.user.username;
-
-            await Promise.all([loadRecords(), loadUsers()]);
-
-        } catch (err) {
-            console.error('Admin boot error:', err);
-            window.location.href = 'login.html';
-        }
-    }
-
-    // ── Tabs ───────────────────────────────────────────────────────────────
-    document.querySelectorAll('.admin-tab').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(btn.dataset.tab).classList.add('active');
-        });
-    });
-
-    // ── Logout ─────────────────────────────────────────────────────────────
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-        try {
-            await fetch('api/auth/logout.php', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: { 'Content-Type': 'application/json' },
-            });
-        } catch (_) {}
-        window.location.href = 'login.html';
-    });
-
-    // ── Helpers ────────────────────────────────────────────────────────────
-    let toastTimer;
-    function showToast(msg, type = 'success') {
-        const el = document.getElementById('toast');
-        el.textContent = msg;
-        el.className   = 'admin-toast show ' + type;
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => { el.className = 'admin-toast'; }, 3200);
-    }
-
-    function fmtDate(str) {
-        if (!str) return '–';
-        return str.split('T')[0].split(' ')[0];
-    }
-
-    // ── Delete modal ───────────────────────────────────────────────────────
-    let _pendingDelete = null;
-
-    function openDeleteModal(title, msg, fn) {
-        _pendingDelete = fn;
-        document.getElementById('modalTitle').textContent = title;
-        document.getElementById('modalMsg').textContent   = msg;
-        document.getElementById('deleteModal').classList.remove('hidden');
-    }
-
-    document.getElementById('cancelDelBtn').addEventListener('click', () => {
-        document.getElementById('deleteModal').classList.add('hidden');
-        _pendingDelete = null;
-    });
-
-    document.getElementById('confirmDelBtn').addEventListener('click', async () => {
-        document.getElementById('deleteModal').classList.add('hidden');
-        if (_pendingDelete) await _pendingDelete();
-        _pendingDelete = null;
-    });
-
-    // ══ RECORDS (personal_info) ════════════════════════════════════════════
-    let allRecords = [];
-
-    async function loadRecords() {
-        try {
-            const res  = await fetch('api/admin/personal_info.php', { credentials: 'same-origin' });
-            const data = await res.json();
-            if (!data.success) { showToast('فشل تحميل البطاقات', 'error'); return; }
-
-            allRecords = data.records || [];
-            document.getElementById('statTeachers').textContent = allRecords.length;
-            renderRecords(allRecords);
-        } catch (err) {
-            showToast('خطأ في الاتصال', 'error');
-        }
-    }
-
-    function renderRecords(list) {
-        const loading = document.getElementById('loadingRecords');
-        const tbl     = document.getElementById('tblRecords');
-        const body    = document.getElementById('bodyRecords');
-
-        loading.style.display = 'none';
-        tbl.style.display     = 'table';
-        body.innerHTML        = '';
-
-        if (!list.length) {
-            body.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--text-light);padding:30px">لا توجد بيانات</td></tr>';
-            return;
-        }
-
-        list.forEach((r, i) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${i + 1}</td>
-                <td>${esc(r.first_name)}</td>
-                <td>${esc(r.family_name)}</td>
-                <td>${esc(r.school_name) || '–'}</td>
-                <td>${esc(r.job_rank) || '–'}</td>
-                <td>${fmtDate(r.first_appointment_date)}</td>
-                <td>${esc(r.echelon) || '–'}</td>
-                <td>${esc(r.grade) || '–'}</td>
-                <td>${fmtDate(r.last_inspection_date)}</td>
-                <td>${r.last_inspection_score ?? '–'}</td>
-                <td style="white-space:nowrap" colspan="3">
-                    <div style="display:flex;gap:4px;flex-wrap:nowrap;align-items:center;justify-content:center">
-                    <button class="btn-action btn-pdf"  data-id="${r.id}" title="تصدير PDF">↓ PDF</button>
-                    <button class="btn-action btn-edit" data-id="${r.id}" title="عرض / تعديل">تعديل</button>
-                    <button class="btn-action btn-del"  data-id="${r.id}" title="حذف">حذف</button>
-                    </div>
-                </td>
-            `;
-            body.appendChild(tr);
-        });
-
-        // Edit record
-        body.querySelectorAll('.btn-edit').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const rec = allRecords.find(r => String(r.id) === btn.dataset.id);
-                if (rec) openEditModal(rec);
-            });
-        });
-
-        // PDF export
-        body.querySelectorAll('.btn-pdf').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const rec = allRecords.find(r => String(r.id) === btn.dataset.id);
-                if (rec) printRecord(rec);
-            });
-        });
-
-        // Delete record
-        body.querySelectorAll('.btn-del').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = btn.dataset.id;
-                openDeleteModal(
-                    'حذف البطاقة',
-                    'هل تريد حذف هذه البطاقة الشخصية نهائيًا؟',
-                    async () => {
-                        const res  = await fetch('api/admin/personal_info.php', {
-                            method:      'DELETE',
-                            credentials: 'same-origin',
-                            headers:     { 'Content-Type': 'application/json' },
-                            body:        JSON.stringify({ id: parseInt(id) }),
-                        });
-                        const data = await res.json();
-                        if (data.success) { showToast('تم حذف البطاقة'); await loadRecords(); }
-                        else showToast(data.message || 'فشل الحذف', 'error');
-                    }
-                );
-            });
-        });
-    }
-
-    document.getElementById('searchRecords').addEventListener('input', function () {
-        const q = this.value.trim().toLowerCase();
-        if (!q) { renderRecords(allRecords); return; }
-        renderRecords(allRecords.filter(r =>
-            (r.first_name  || '').toLowerCase().includes(q) ||
-            (r.family_name || '').toLowerCase().includes(q) ||
-            (r.school_name || '').toLowerCase().includes(q)
-        ));
-    });
-
-    // ══ USERS ══════════════════════════════════════════════════════════════
-    let allUsers = [];
-
-    async function loadUsers() {
-        try {
-            const res  = await fetch('api/admin/users.php', { credentials: 'same-origin' });
-            const data = await res.json();
-            if (!data.success) { showToast('فشل تحميل المستخدمين', 'error'); return; }
-
-            allUsers = data.users || [];
-            document.getElementById('statUsers').textContent  = allUsers.length;
-            document.getElementById('statAdmins').textContent = allUsers.filter(u => u.role === 'admin').length;
-            renderUsers(allUsers);
-        } catch (err) {
-            showToast('خطأ في الاتصال', 'error');
-        }
-    }
-
-    function renderUsers(list) {
-        const loading = document.getElementById('loadingUsers');
-        const tbl     = document.getElementById('tblUsers');
-        const body    = document.getElementById('bodyUsers');
-
-        loading.style.display = 'none';
-        tbl.style.display     = 'table';
-        body.innerHTML        = '';
-
-        if (!list.length) {
-            body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-light);padding:30px">لا توجد بيانات</td></tr>';
-            return;
-        }
-
-        list.forEach((u, i) => {
-            const isAdmin = u.role === 'admin';
-            const active  = parseInt(u.is_active) === 1;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${i + 1}</td>
-                <td>${esc(u.first_name)} ${esc(u.last_name)}</td>
-                <td>${esc(u.username)}</td>
-                <td>${esc(u.email)}</td>
-                <td><span class="badge ${isAdmin ? 'badge-admin' : 'badge-user'}">${isAdmin ? 'مدير' : 'مستخدم'}</span></td>
-                <td><span class="badge ${active ? 'badge-active' : 'badge-off'}">${active ? 'نشط' : 'معطّل'}</span></td>
-                <td>${fmtDate(u.last_login)}</td>
-                <td>
-                    <button class="btn-action btn-del" data-id="${u.id}" title="حذف">حذف</button>
-                </td>
-            `;
-            body.appendChild(tr);
-        });
-
-        body.querySelectorAll('.btn-del').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = btn.dataset.id;
-                if (parseInt(id) === currentAdmin?.id) {
-                    showToast('لا يمكنك حذف حسابك الخاص', 'error'); return;
-                }
-                openDeleteModal(
-                    'حذف المستخدم',
-                    'هل تريد حذف هذا المستخدم نهائيًا؟ سيتم حذف بياناته الشخصية أيضًا.',
-                    async () => {
-                        const res  = await fetch('api/admin/users.php', {
-                            method:      'DELETE',
-                            credentials: 'same-origin',
-                            headers:     { 'Content-Type': 'application/json' },
-                            body:        JSON.stringify({ id: parseInt(id) }),
-                        });
-                        const data = await res.json();
-                        if (data.success) { showToast('تم حذف المستخدم'); await loadUsers(); }
-                        else showToast(data.message || 'فشل الحذف', 'error');
-                    }
-                );
-            });
-        });
-    }
-
-    document.getElementById('searchUsers').addEventListener('input', function () {
-        const q = this.value.trim().toLowerCase();
-        if (!q) { renderUsers(allUsers); return; }
-        renderUsers(allUsers.filter(u =>
-            (u.first_name || '').toLowerCase().includes(q) ||
-            (u.last_name  || '').toLowerCase().includes(q) ||
-            (u.username   || '').toLowerCase().includes(q) ||
-            (u.email      || '').toLowerCase().includes(q)
-        ));
-    });
-
-    // ══ ADD USER MODAL ═════════════════════════════════════════════════════
-    const addUserModal  = document.getElementById('addUserModal');
-    const addUserForm   = document.getElementById('addUserForm');
-    const addUserSaveBtn = document.getElementById('addUserSaveBtn');
-
-    function openAddUserModal() {
-        addUserForm.reset();
-        ['au_fn_field','au_ln_field','au_em_field','au_un_field','au_pw_field'].forEach(id => {
-            document.getElementById(id).classList.remove('has-error');
-        });
-        addUserModal.classList.remove('hidden');
-        document.getElementById('au_first_name').focus();
-    }
-
-    function closeAddUserModal() {
-        addUserModal.classList.add('hidden');
-    }
-
-    document.getElementById('openAddUserBtn').addEventListener('click', openAddUserModal);
-    document.getElementById('addUserModalClose').addEventListener('click', closeAddUserModal);
-    document.getElementById('addUserCancelBtn').addEventListener('click', closeAddUserModal);
-    addUserModal.addEventListener('click', e => { if (e.target === addUserModal) closeAddUserModal(); });
-
-    addUserForm.addEventListener('submit', async e => {
-        e.preventDefault();
-
-        const firstName = document.getElementById('au_first_name').value.trim();
-        const lastName  = document.getElementById('au_last_name').value.trim();
-        const email     = document.getElementById('au_email').value.trim();
-        const username  = document.getElementById('au_username').value.trim();
-        const password  = document.getElementById('au_password').value;
-        const role      = document.getElementById('au_role').value;
-
-        addUserSaveBtn.disabled = true;
-        addUserSaveBtn.textContent = 'جارٍ الإنشاء…';
-
-        try {
-            const res  = await fetch('api/admin/users.php', {
-                method:      'POST',
-                credentials: 'same-origin',
-                headers:     { 'Content-Type': 'application/json' },
-                body:        JSON.stringify({ first_name: firstName, last_name: lastName,
-                                             email, username, password, role }),
-            });
-            const data = await res.json();
-
-            if (data.success) {
-                closeAddUserModal();
-                showToast('تم إنشاء الحساب بنجاح');
-                await loadUsers();
-            } else {
-                // Afficher les erreurs de champ
-                const errs = data.errors || {};
-                const map = {
-                    first_name: ['au_fn_field',  'au_fn_err'],
-                    last_name:  ['au_ln_field',  'au_ln_err'],
-                    email:      ['au_em_field',  'au_em_err'],
-                    username:   ['au_un_field',  'au_un_err'],
-                    password:   ['au_pw_field',  'au_pw_err'],
-                };
-                let shown = false;
-                Object.entries(map).forEach(([key, [fieldId, errId]]) => {
-                    const field = document.getElementById(fieldId);
-                    if (errs[key]) {
-                        document.getElementById(errId).textContent = errs[key];
-                        field.classList.add('has-error');
-                        shown = true;
-                    } else {
-                        field.classList.remove('has-error');
-                    }
-                });
-                if (!shown) showToast(data.message || 'فشل إنشاء الحساب', 'error');
-            }
-        } catch (err) {
-            showToast('خطأ في الاتصال', 'error');
-        } finally {
-            addUserSaveBtn.disabled = false;
-            addUserSaveBtn.textContent = 'إنشاء الحساب';
-        }
-    });
-
-    // ══ PDF EXPORT (same template as generatePDF on index.html) ═══════════
-
-    function formatDate(iso) {
-        if (!iso) return '—';
-        const part = iso.split('T')[0];
-        const [y, m, d] = part.split('-');
-        return `${d}/${m}/${y}`;
-    }
-
-    function recordToData(r) {
-        const str = v => (v !== null && v !== undefined) ? String(v) : '';
-        return {
-            district             : str(r.district),
-            schoolYear           : str(r.school_year),
-            schoolName           : str(r.school_name),
-            yearsWorked          : str(r.years_worked),
-            firstName            : str(r.first_name),
-            familyName           : str(r.family_name),
-            maidenName           : str(r.maiden_name),
-            birthDate            : str(r.birth_date).split('T')[0],
-            birthPlace           : str(r.birth_place),
-            residence            : str(r.residence),
-            gender               : str(r.gender),
-            maritalStatus        : str(r.marital_status),
-            childrenCount        : str(r.children_count),
-            spouseName           : str(r.spouse_name),
-            phone                : str(r.phone),
-            email                : str(r.email),
-            address              : str(r.address),
-            schoolEntryDate      : str(r.school_entry_date).split('T')[0],
-            diploma              : str(r.diploma),
-            techInstituteGradYear: str(r.tech_institute_grad_year),
-            universityGradYear   : str(r.university_grad_year),
-            firstAppointmentDate : str(r.first_appointment_date).split('T')[0],
-            job_rank             : str(r.job_rank),
-            status               : str(r.status),
-            lastInspectionDate   : str(r.last_inspection_date).split('T')[0],
-            lastInspectionScore  : str(r.last_inspection_score),
-            echelon              : str(r.echelon),
-            grade                : str(r.grade),
-            executionDate        : str(r.execution_date).split('T')[0],
-            latestInspectionDate : str(r.latest_inspection_date).split('T')[0],
-            latestInspectionScore: str(r.latest_inspection_score),
-            previousYearClass    : str(r.previous_year_class),
-            currentYearClass     : str(r.current_year_class),
-            studentCount         : str(r.student_count),
-            haraka               : str(r.haraka),
-            timetable            : [],
-        };
-    }
-
-    function buildAdminPDFTemplate(data) {
-        const fullName = [data.familyName, data.firstName, data.maidenName ? `(${data.maidenName})` : ''].filter(Boolean).join(' ');
-
-        const sec = title => `
-            <tr>
-                <td colspan="6" style="padding:6px 12px;background:#1a3a5c;color:#fff;font-weight:700;font-size:11.5px;border-right:4px solid #c8a45a;">${title}</td>
-            </tr>`;
-
-        const full = (label, value) => `
-            <tr>
-                <td class="lbl" colspan="2">${label}</td>
-                <td class="val" colspan="4">${value || '—'}</td>
-            </tr>`;
-
-        const dual = (l1, v1, l2, v2) => `
-            <tr>
-                <td class="lbl">${l1}</td>
-                <td class="val" colspan="2">${v1 || '—'}</td>
-                <td class="lbl">${l2}</td>
-                <td class="val" colspan="2">${v2 || '—'}</td>
-            </tr>`;
-
-        const tri = (l1, v1, l2, v2, l3, v3) => `
-            <tr>
-                <td class="lbl">${l1}</td>
-                <td class="val">${v1 || '—'}</td>
-                <td class="lbl">${l2}</td>
-                <td class="val">${v2 || '—'}</td>
-                <td class="lbl">${l3}</td>
-                <td class="val">${v3 || '—'}</td>
-            </tr>`;
-
-        const ttRows = (data.timetable || []).map(r => `
-            <tr>
-                <td class="tt-day">${r.day}</td>
-                ${r.slots.slice(0,4).map(s=>`<td class="tt-slot">${s}</td>`).join('')}
-                <td class="tt-break"></td>
-                ${r.slots.slice(4).map(s=>`<td class="tt-slot">${s}</td>`).join('')}
-            </tr>`).join('');
-
-        const html = `
-            <div id="adminPdfTemplate" style="width:794px;min-height:1123px;background:#ffffff;font-family:'Cairo','Segoe UI',Tahoma,sans-serif;direction:rtl;padding:40px 50px 80px;box-sizing:border-box;position:relative;color:#1a2e44;">
-                <div style="position:absolute;inset:16px;border:2px solid #1a3a5c;pointer-events:none;border-radius:4px;"></div>
-                <div style="position:absolute;inset:20px;border:1px solid #c8a45a;pointer-events:none;border-radius:2px;"></div>
-
-                <div style="text-align:center;margin-bottom:20px;">
-                    <p style="font-size:13px;font-weight:700;color:#1a3a5c;margin:0 0 2px;">الجمهورية الجزائرية الديمقراطية الشعبية</p>
-                    <p style="font-size:12px;color:#555;margin:0 0 2px;">وزارة التربية الوطنية</p>
-                    <p style="font-size:12px;font-weight:600;color:#1a3a5c;margin:0 0 2px;">مديرية التربية لولاية بسكرة</p>
-                    <p style="font-size:11px;color:#555;margin:0;">مفتشية التعليم الابتدائي</p>
-                    <div style="display:flex;align-items:center;gap:8px;margin:12px auto;width:70%;">
-                        <div style="flex:1;height:1px;background:#c8a45a;"></div>
-                        <div style="width:6px;height:6px;background:#c8a45a;transform:rotate(45deg);flex-shrink:0;"></div>
-                        <div style="flex:1;height:1px;background:#c8a45a;"></div>
-                    </div>
-                    <h1 style="font-size:16px;font-weight:700;color:#1a3a5c;margin:0 0 6px;">البطاقة الشخصية لأستاذ اللغة العربية</h1>
-                    <p style="font-size:11px;color:#777;margin:0;">يرجى ملء جميع الحقول المطلوبة بدقة</p>
-                </div>
-
-                <div style="background:linear-gradient(135deg,#1a3a5c,#2c5282);color:#fff;text-align:center;padding:10px 20px;border-radius:4px;margin-bottom:18px;font-size:15px;font-weight:700;">
-                    ${fullName}
-                </div>
-
-                <style>
-                    .pdf-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;}
-                    .lbl{padding:6px 10px;background:#eef1f6;color:#1a3a5c;font-weight:700;border:1px solid #c8d0db;white-space:nowrap;width:14%;}
-                    .val{padding:6px 12px;color:#1a2e44;border:1px solid #c8d0db;word-break:break-word;}
-                    .tt-tbl{width:100%;border-collapse:collapse;font-size:10.5px;}
-                    .tt-hdr{background:#1a3a5c;color:#fff;padding:5px 4px;text-align:center;border:1px solid #2c5282;font-weight:600;font-size:10px;}
-                    .tt-period{background:#2c5282;color:#fff;padding:4px;text-align:center;border:1px solid #2c5282;font-size:10px;}
-                    .tt-day{background:#eef1f6;color:#1a3a5c;font-weight:700;padding:5px 8px;border:1px solid #c8d0db;text-align:center;white-space:nowrap;}
-                    .tt-slot{padding:5px 4px;border:1px solid #c8d0db;text-align:center;min-width:56px;}
-                    .tt-break{background:#f7f9fc;border:1px solid #c8d0db;width:36px;}
-                </style>
-
-                <table class="pdf-tbl">
-                    ${sec('المعلومات المدرسية')}
-                    ${dual('المقاطعة المدرسية', data.district, 'العام الدراسي', data.schoolYear)}
-                    ${dual('اسم المدرسة', data.schoolName, 'عدد سنوات العمل فيها', data.yearsWorked)}
-
-                    ${sec('المعلومات الشخصية')}
-                    ${full('مكان الإقامة', data.residence)}
-                    ${full('الجنس', data.gender)}
-                    ${tri('الاسم الشخصي', data.firstName, 'الاسم العائلي', data.familyName, 'اللقب الأصلي للمتزوجة', data.maidenName)}
-                    ${dual('تاريخ الميلاد', formatDate(data.birthDate), 'مكان الميلاد', data.birthPlace)}
-                    ${data.maritalStatus ? full('الحالة المدنية', data.maritalStatus) : ''}
-                    ${data.childrenCount !== '' ? full('عدد الأطفال', data.childrenCount) : ''}
-                    ${data.spouseName ? full('إسم و لقب الزوج', data.spouseName) : ''}
-
-                    ${sec('معلومات الاتصال')}
-                    ${full('رقم الهاتف', data.phone)}
-                    ${full('البريد الإلكتروني', data.email)}
-                    ${dual('سنة التخرج من المعهد التكنولوجي', data.techInstituteGradYear, 'سنة التخرج من الجامعة', data.universityGradYear)}
-                    ${full('العنوان', data.address)}
-
-                    ${sec('المسار المهني')}
-                    ${full('الشهادة / الدبلوم المحصل عليه', data.diploma)}
-                    ${data.schoolEntryDate ? full('تاريخ الدخول المدرسي الأولي', formatDate(data.schoolEntryDate)) : ''}
-                    ${full('تاريخ أول تعيين بالتعليم', formatDate(data.firstAppointmentDate))}
-                    ${dual('الرتبة', data.job_rank, 'الصفة', data.status)}
-                    ${tri('السلم', data.echelon, 'الدرجة', data.grade, 'تاريخ التنفيذ', formatDate(data.executionDate))}
-                    ${dual('تاريخ آخر تفتيش', formatDate(data.latestInspectionDate), 'علامته', data.latestInspectionScore)}
-                    ${dual('تاريخ التفتيش ما قبل الأخير', formatDate(data.lastInspectionDate), 'علامته', data.lastInspectionScore)}
-
-                    ${sec('معلومات القسم')}
-                    ${dual('القسم المُسند العام الماضي', data.previousYearClass, 'القسم المُسند هذا العام', data.currentYearClass)}
-                    ${dual('عدد التلاميذ', data.studentCount, 'معني بالحركة', data.haraka)}
-                </table>
-
-                ${data.timetable && data.timetable.length ? `
-                <div style="margin-bottom:14px;">
-                    <div style="background:#1a3a5c;color:#fff;padding:6px 12px;font-weight:700;font-size:11.5px;border-right:4px solid #c8a45a;">
-                        التوزيع الأسبوعي
-                        <span style="font-size:10px;font-weight:400;color:#c8a45a;margin-right:12px;">الفترة الصباحية: 4 حصص &nbsp;|&nbsp; الفترة المسائية: 3 حصص</span>
-                    </div>
-                    <table class="tt-tbl">
-                        <thead>
-                            <tr>
-                                <th class="tt-hdr" rowspan="2" style="width:60px;">الأيام</th>
-                                <th class="tt-period" colspan="4">الفترة الصباحية</th>
-                                <th class="tt-hdr" rowspan="2" style="width:36px;">استراحة</th>
-                                <th class="tt-period" colspan="3">الفترة المسائية</th>
-                            </tr>
-                            <tr>
-                                <th class="tt-hdr">1</th><th class="tt-hdr">2</th><th class="tt-hdr">3</th><th class="tt-hdr">4</th>
-                                <th class="tt-hdr">5</th><th class="tt-hdr">6</th><th class="tt-hdr">7</th>
-                            </tr>
-                        </thead>
-                        <tbody>${ttRows}</tbody>
-                    </table>
-                </div>` : ''}
-
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:20px;padding-top:14px;border-top:1px solid #dde3ed;font-size:11px;color:#666;">
-                    <div style="text-align:center;min-width:160px;">
-                        <p style="margin:0 0 32px;">المفتش</p>
-                        <div style="border-top:1px solid #aaa;width:120px;margin:0 auto;"></div>
-                        <p style="margin:4px 0 0;font-size:10px;color:#999;">التوقيع والختم</p>
-                    </div>
-                    <div style="text-align:center;font-size:10px;color:#aaa;">
-                        <p style="margin:0;">تاريخ الإصدار: ${new Date().toLocaleDateString('ar-DZ')}</p>
-                    </div>
-                    <div style="text-align:center;min-width:160px;">
-                        <p style="margin:0 0 32px;">الأستاذ / الأستاذة</p>
-                        <div style="border-top:1px solid #aaa;width:120px;margin:0 auto;"></div>
-                        <p style="margin:4px 0 0;font-size:10px;color:#999;">التوقيع</p>
-                    </div>
-                </div>
-
-                <div style="position:absolute;bottom:28px;left:28px;right:28px;text-align:center;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:6px;">
-                    سماح علمي — جميع الحقوق محفوظة — 2026
-                </div>
-            </div>`;
-
-        const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'position:fixed;top:-9999px;left:-9999px;z-index:-1;';
-        wrapper.innerHTML = html;
-        document.body.appendChild(wrapper);
-        return wrapper;
-    }
-
-    async function printRecord(r) {
-        const btn = event && event.target ? event.target.closest('.btn-pdf') : null;
-        if (btn) { btn.disabled = true; btn.textContent = '…'; }
-        let wrapper = null;
-        try {
-            const { jsPDF } = window.jspdf;
-            const data = recordToData(r);
-            wrapper = buildAdminPDFTemplate(data);
-            const templateEl = wrapper.querySelector('#adminPdfTemplate');
-
-            const canvas = await html2canvas(templateEl, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#ffffff',
-                width: templateEl.scrollWidth,
-                height: templateEl.scrollHeight,
-            });
-
-            const pdf   = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pageW = pdf.internal.pageSize.getWidth();
-            const pageH = pdf.internal.pageSize.getHeight();
-            const margin  = 8;
-            const usableW = pageW - margin * 2;
-            const imgH    = (canvas.height * usableW) / canvas.width;
-
-            let remaining = imgH;
-            let srcY = 0;
-            while (remaining > 0) {
-                const sliceH = Math.min(remaining, pageH - margin * 2);
-                const srcH   = (sliceH / imgH) * canvas.height;
-                const sliceCanvas = document.createElement('canvas');
-                sliceCanvas.width  = canvas.width;
-                sliceCanvas.height = srcH;
-                sliceCanvas.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-                if (srcY > 0) pdf.addPage();
-                pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', margin, margin, usableW, sliceH);
-                srcY      += srcH;
-                remaining -= sliceH;
-            }
-
-            const namePart = [r.family_name, r.first_name].filter(Boolean).join('_');
-            pdf.save(`البطاقة_الشخصية${namePart ? '_' + namePart : ''}.pdf`);
-        } catch (err) {
-            console.error('PDF error:', err);
-            showToast('حدث خطأ أثناء إنشاء PDF', 'error');
-        } finally {
-            if (wrapper) wrapper.remove();
-            if (btn) { btn.disabled = false; btn.textContent = '↓ PDF'; }
-        }
-    }
-
-    // ══ EDIT RECORD MODAL ═══════════════════════════════════════════════════
-
-    const editModal    = document.getElementById('editModal');
-    const editForm     = document.getElementById('editRecordForm');
-    const editSaveBtn  = document.getElementById('editSaveBtn');
-
-    // Map of field id → record key
-    const FIELDS = [
-        'district','school_year','school_name','years_worked',
-        'gender','first_name','family_name','maiden_name',
-        'birth_date','birth_place','residence',
-        'marital_status','spouse_name','children_count',
-        'phone','email','address',
-        'school_entry_date','diploma','first_appointment_date',
-        'job_rank','status','echelon','grade','execution_date',
-        'latest_inspection_date','latest_inspection_score',
-        'last_inspection_date','last_inspection_score',
-        'previous_year_class','current_year_class',
-        'student_count','haraka',
-        'tech_institute_grad_year','university_grad_year',
-    ];
-
-    function openEditModal(rec) {
-        // Clear previous errors
-        editForm.querySelectorAll('.edit-field').forEach(f => f.classList.remove('has-error'));
-
-        document.getElementById('ef_id').value = rec.id;
-
-        FIELDS.forEach(key => {
-            const el = document.getElementById('ef_' + key);
-            if (!el) return;
-            const val = rec[key];
-            if (el.tagName === 'SELECT') {
-                el.value = val || '';
-            } else {
-                el.value = (val !== null && val !== undefined) ? val : '';
-            }
-        });
-
-        editModal.classList.remove('hidden');
-        // Scroll modal to top
-        editModal.scrollTop = 0;
-    }
-
-    function closeEditModal() {
-        editModal.classList.add('hidden');
-    }
-
-    document.getElementById('editModalClose').addEventListener('click', closeEditModal);
-    document.getElementById('editCancelBtn').addEventListener('click', closeEditModal);
-    editModal.addEventListener('click', (e) => { if (e.target === editModal) closeEditModal(); });
-
-    editForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        // Clear errors
-        editForm.querySelectorAll('.edit-field').forEach(f => f.classList.remove('has-error'));
-
-        // Client-side required validation
-        let valid = true;
-        if (!document.getElementById('ef_first_name').value.trim()) {
-            document.getElementById('ef_first_name').closest('.edit-field').classList.add('has-error');
-            valid = false;
-        }
-        if (!document.getElementById('ef_family_name').value.trim()) {
-            document.getElementById('ef_family_name').closest('.edit-field').classList.add('has-error');
-            valid = false;
-        }
-        if (!document.getElementById('ef_email').value.trim()) {
-            document.getElementById('ef_email').closest('.edit-field').classList.add('has-error');
-            valid = false;
-        }
-        if (!valid) return;
-
-        // Build payload
-        const payload = { id: parseInt(document.getElementById('ef_id').value) };
-        FIELDS.forEach(key => {
-            const el = document.getElementById('ef_' + key);
-            if (!el) return;
-            const v = el.value;
-            // Send numeric fields as numbers when non-empty
-            if (el.type === 'number') {
-                payload[key] = v !== '' ? parseInt(v) : '';
-            } else {
-                payload[key] = v;
-            }
-        });
-
-        editSaveBtn.disabled   = true;
-        editSaveBtn.textContent = 'جارٍ الحفظ…';
-
-        try {
-            const res  = await fetch('api/admin/personal_info.php', {
-                method:      'PUT',
-                credentials: 'same-origin',
-                headers:     { 'Content-Type': 'application/json' },
-                body:        JSON.stringify(payload),
-            });
-            const data = await res.json();
-
-            if (data.success) {
-                showToast('تم حفظ التعديلات بنجاح');
-                closeEditModal();
-                await loadRecords();
-            } else {
-                // Show server-side field errors
-                if (data.errors) {
-                    Object.keys(data.errors).forEach(key => {
-                        const el = document.getElementById('ef_' + key);
-                        if (el) {
-                            el.closest('.edit-field').classList.add('has-error');
-                            const errEl = document.getElementById('ef_' + key + '_err');
-                            if (errEl) errEl.textContent = data.errors[key];
-                        }
-                    });
-                }
-                showToast(data.message || 'فشل الحفظ', 'error');
-            }
-        } catch (err) {
-            showToast('خطأ في الاتصال بالخادم', 'error');
-        } finally {
-            editSaveBtn.disabled   = false;
-            editSaveBtn.textContent = 'حفظ التعديلات';
-        }
-    });
-
-    // ══ ADD RECORD MODAL ════════════════════════════════════════════════════
-    const addRecordModal   = document.getElementById('addRecordModal');
-    const addRecordForm    = document.getElementById('addRecordForm');
-    const addRecordSaveBtn = document.getElementById('addRecordSaveBtn');
-
-    const AR_FIELDS = [
-        'district','school_year','school_name','years_worked',
-        'gender','first_name','family_name','maiden_name',
-        'birth_date','birth_place','residence',
-        'marital_status','spouse_name','children_count',
-        'phone','email','address',
-        'school_entry_date','diploma','first_appointment_date',
-        'job_rank','status','echelon','grade','execution_date',
-        'latest_inspection_date','latest_inspection_score',
-        'last_inspection_date','last_inspection_score',
-        'previous_year_class','current_year_class',
-        'student_count','haraka',
-        'tech_institute_grad_year','university_grad_year',
-    ];
-
-    const AR_ERRORS = {
-        school_name: 'ar_school_name_err', gender: 'ar_gender_err',
-        first_name:  'ar_first_name_err',  family_name: 'ar_family_name_err',
-        birth_date:  'ar_birth_date_err',  birth_place: 'ar_birth_place_err',
-        residence:   'ar_residence_err',   marital_status: 'ar_marital_status_err',
-        phone:       'ar_phone_err',       email: 'ar_email_err',
-        address:     'ar_address_err',     diploma: 'ar_diploma_err',
-    };
-
-    function openAddRecordModal() {
-        addRecordForm.reset();
-        document.getElementById('ar_district').value   = '11';
-        document.getElementById('ar_school_year').value = '2025 / 2026';
-        addRecordForm.querySelectorAll('.edit-field').forEach(f => f.classList.remove('has-error'));
-        addRecordModal.classList.remove('hidden');
-        addRecordModal.scrollTop = 0;
-        document.getElementById('ar_first_name').focus();
-    }
-
-    function closeAddRecordModal() {
-        addRecordModal.classList.add('hidden');
-    }
-
-    document.getElementById('openAddRecordBtn').addEventListener('click', openAddRecordModal);
-    document.getElementById('addRecordModalClose').addEventListener('click', closeAddRecordModal);
-    document.getElementById('addRecordCancelBtn').addEventListener('click', closeAddRecordModal);
-    addRecordModal.addEventListener('click', e => { if (e.target === addRecordModal) closeAddRecordModal(); });
-
-    addRecordForm.addEventListener('submit', async e => {
-        e.preventDefault();
-        addRecordForm.querySelectorAll('.edit-field').forEach(f => f.classList.remove('has-error'));
-
-        // Client-side required check
-        const required = ['ar_first_name','ar_family_name','ar_gender','ar_birth_date',
-                          'ar_birth_place','ar_residence','ar_marital_status',
-                          'ar_phone','ar_email','ar_address','ar_diploma','ar_school_name'];
-        let valid = true;
-        required.forEach(id => {
-            const el = document.getElementById(id);
-            if (!el || !el.value.trim()) {
-                el && el.closest('.edit-field').classList.add('has-error');
-                valid = false;
-            }
-        });
-        if (!valid) { showToast('يرجى تعبئة الحقول الإلزامية', 'error'); return; }
-
-        // Build payload
-        const payload = {};
-        AR_FIELDS.forEach(key => {
-            const el = document.getElementById('ar_' + key);
-            if (!el) return;
-            const v = el.value;
-            payload[key] = (el.type === 'number' && v !== '') ? parseInt(v) : v;
-        });
-
-        addRecordSaveBtn.disabled   = true;
-        addRecordSaveBtn.textContent = 'جارٍ الإضافة…';
-
-        try {
-            const res  = await fetch('api/admin/personal_info.php', {
-                method:      'POST',
-                credentials: 'same-origin',
-                headers:     { 'Content-Type': 'application/json' },
-                body:        JSON.stringify(payload),
-            });
-            const data = await res.json();
-
-            if (data.success) {
-                closeAddRecordModal();
-                showToast('تم إضافة البطاقة بنجاح');
-                await loadRecords();
-            } else {
-                const errs = data.errors || {};
-                Object.entries(AR_ERRORS).forEach(([key, errId]) => {
-                    const el = document.getElementById('ar_' + key);
-                    if (errs[key] && el) {
-                        const errEl = document.getElementById(errId);
-                        if (errEl) errEl.textContent = errs[key];
-                        el.closest('.edit-field').classList.add('has-error');
-                    }
-                });
-                showToast(data.message || 'فشل الإضافة', 'error');
-            }
-        } catch (err) {
-            showToast('خطأ في الاتصال بالخادم', 'error');
-        } finally {
-            addRecordSaveBtn.disabled   = false;
-            addRecordSaveBtn.textContent = 'إضافة البطاقة';
-        }
-    });
-
-    // ── Escape helper ──────────────────────────────────────────────────────
-    function esc(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
-
-    // ── Boot ───────────────────────────────────────────────────────────────
-
-    // ══ EXCEL IMPORT ════════════════════════════════════════════════════════
-    (function setupImportModal() {
-        const importModal       = document.getElementById('importModal');
-        const importFileInput   = document.getElementById('importFileInput');
-        const importDropZone    = document.getElementById('importDropZone');
-        const importPreviewWrap = document.getElementById('importPreviewWrap');
-        const importPreviewTbl  = document.getElementById('importPreviewTbl');
-        const importStartBtn    = document.getElementById('importStartBtn');
-        const importStatusBar   = document.getElementById('importStatusBar');
-        const importRowCount    = document.getElementById('importRowCount');
-
-        let parsedRows = [];
-
-        function openImportModal() { resetImportModal(); importModal.classList.remove('hidden'); }
-        function closeImportModal() { importModal.classList.add('hidden'); }
-
-        function resetImportModal() {
-            parsedRows = [];
-            importFileInput.value = '';
-            importPreviewWrap.style.display = 'none';
-            importStartBtn.disabled = true;
-            importStatusBar.className = 'import-status-bar';
-            importStatusBar.innerHTML = '';
-            importRowCount.textContent = '';
-        }
-
-        document.getElementById('openImportBtn').addEventListener('click', openImportModal);
-        document.getElementById('importModalClose').addEventListener('click', closeImportModal);
-        document.getElementById('importCancelBtn').addEventListener('click', closeImportModal);
-        importModal.addEventListener('click', e => { if (e.target === importModal) closeImportModal(); });
-
-        // Drag & drop
-        importDropZone.addEventListener('dragover', e => { e.preventDefault(); importDropZone.classList.add('drag-over'); });
-        importDropZone.addEventListener('dragleave', () => importDropZone.classList.remove('drag-over'));
-        importDropZone.addEventListener('drop', e => {
-            e.preventDefault();
-            importDropZone.classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if (file) processFile(file);
-        });
-        importDropZone.addEventListener('click', () => importFileInput.click());
-        importFileInput.addEventListener('change', e => { const f = e.target.files[0]; if (f) processFile(f); });
-
-        function processFile(file) {
-            const ext = file.name.split('.').pop().toLowerCase();
-            if (!['xlsx','xls','csv'].includes(ext)) {
-                showStatus('error', 'يُرجى اختيار ملف xlsx أو csv فقط'); return;
-            }
-            const reader = new FileReader();
-            reader.onload = ev => {
-                try {
-                    const wb   = XLSX.read(ev.target.result, { type: 'array', cellDates: false });
-                    const ws   = wb.Sheets[wb.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-                    if (rows.length < 2) { showStatus('error', 'الملف فارغ أو لا يحتوي على بيانات'); return; }
-                    const headerRow = rows[0].map(h => String(h).trim());
-                    parsedRows = [];
-                    for (let r = 1; r < rows.length; r++) {
-                        const cells = rows[r];
-                        if (cells.every(c => c === '' || c === null || c === undefined)) continue;
-                        const obj = {};
-                        headerRow.forEach((h, i) => { obj[h] = cells[i] !== undefined ? String(cells[i]).trim() : ''; });
-                        parsedRows.push(obj);
-                    }
-                    if (parsedRows.length === 0) { showStatus('error', 'لا توجد صفوف بيانات صالحة'); return; }
-                    renderPreview(headerRow, parsedRows);
-                    importRowCount.textContent = 'تم تحميل ' + parsedRows.length + ' سجل(ات)';
-                    importStartBtn.disabled = false;
-                    showStatus('info', 'راجع البيانات أدناه ثم اضغط «استيراد» لإضافتها إلى قاعدة البيانات.');
-                } catch (err) {
-                    showStatus('error', 'تعذّر قراءة الملف: ' + err.message);
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function renderPreview(headers, rows) {
-            const maxCols = Math.min(headers.length, 8);
-            let html = '<thead><tr><th>#</th>';
-            headers.slice(0, maxCols).forEach(h => { html += '<th>' + esc(h) + '</th>'; });
-            if (headers.length > maxCols) html += '<th>…</th>';
-            html += '</tr></thead><tbody>';
-            const maxPrev = Math.min(rows.length, 10);
-            for (let i = 0; i < maxPrev; i++) {
-                html += '<tr><td>' + (i + 1) + '</td>';
-                headers.slice(0, maxCols).forEach(h => { html += '<td>' + esc(rows[i][h] ?? '') + '</td>'; });
-                if (headers.length > maxCols) html += '<td>…</td>';
-                html += '</tr>';
-            }
-            if (rows.length > maxPrev) {
-                html += '<tr><td colspan="' + (maxCols + 2) + '" style="text-align:center;color:#888">… و' + (rows.length - maxPrev) + ' سجلات أخرى</td></tr>';
-            }
-            html += '</tbody>';
-            importPreviewTbl.innerHTML = html;
-            importPreviewWrap.style.display = 'block';
-        }
-
-        function showStatus(type, msg, extra) {
-            importStatusBar.className = 'import-status-bar ' + type;
-            importStatusBar.innerHTML = msg;
-            if (extra && extra.length) {
-                let ul = '<ul class="import-errors-list">';
-                extra.forEach(e => {
-                    const tag = e.type === 'duplicate' ? ' (تكرار)' : '';
-                    ul += '<li>صف ' + e.row + (e.name ? ' – ' + esc(e.name) : '') + ': ' + esc(e.msg) + tag + '</li>';
-                });
-                ul += '</ul>';
-                importStatusBar.innerHTML += ul;
-            }
-        }
-
-        importStartBtn.addEventListener('click', async () => {
-            if (!parsedRows.length) return;
-            importStartBtn.disabled = true;
-            importStartBtn.textContent = 'جارٍ الاستيراد…';
-            showStatus('info', 'جارٍ إرسال البيانات…');
-            try {
-                const res  = await fetch('api/admin/import_records.php', {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ records: parsedRows }),
-                });
-                const data = await res.json();
-                if (data.success) {
-                    const parts = [];
-                    if (data.inserted > 0) parts.push('✅ تم إضافة <strong>' + data.inserted + '</strong> بطاقة بنجاح');
-                    if (data.skipped  > 0) parts.push('⚠️ تم تجاهل <strong>' + data.skipped  + '</strong> تكرار (بريد مستخدم)');
-                    const errCount = (data.errors || []).filter(e => e.type !== 'duplicate').length;
-                    if (errCount > 0) parts.push('❌ <strong>' + errCount + '</strong> سجل غير صالح');
-                    const type = errCount === 0 && data.skipped === 0 ? 'success' : 'info';
-                    showStatus(type, parts.join(' &nbsp;|&nbsp; '), data.errors || []);
-                    if (data.inserted > 0) {
-                        showToast('تم استيراد ' + data.inserted + ' بطاقة');
-                        await loadRecords();
-                    }
-                } else {
-                    showStatus('error', data.message || 'فشل الاستيراد');
-                }
-            } catch (err) {
-                showStatus('error', 'خطأ في الاتصال: ' + err.message);
-            } finally {
-                importStartBtn.disabled = false;
-                importStartBtn.textContent = 'استيراد';
-            }
-        });
-    })();
-
-    bootAdmin();
-})();
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="js/admin/admin-pdf.js"></script>
+<script src="js/admin/admin-inspections.js"></script>
+<script src="js/admin/admin-evaluations.js"></script>
+<script src="js/admin/admin-import.js"></script>
+<script src="js/admin/admin-schools.js"></script>
+<script src="js/admin/admin-main.js"></script>
 </body>
 </html>

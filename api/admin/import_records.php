@@ -78,7 +78,6 @@ $colMap = [
     'رقم_الهاتف'                  => 'phone',
     'البريد الإلكتروني'           => 'email',
     'البريد_الإلكتروني'           => 'email',
-    'العنوان'                     => 'address',
     'تاريخ التعيين بالمدرسة'      => 'school_entry_date',
     'تاريخ_التعيين_بالمدرسة'      => 'school_entry_date',
     'الشهادة'                     => 'diploma',
@@ -163,7 +162,7 @@ try {
              first_name, family_name, maiden_name,
              birth_date, birth_place, residence, gender,
              marital_status, spouse_name, children_count,
-             phone, email, address,
+             phone, email,
              school_entry_date, diploma,
              first_appointment_date, job_rank, status, echelon, grade, execution_date,
              latest_inspection_date, latest_inspection_score,
@@ -176,7 +175,7 @@ try {
              :fn, :fam, :mn,
              :bd, :bp, :res, :gen,
              :ms, :sn, :cc,
-             :ph, :em, :addr,
+             :ph, :em,
              :sed, :dip,
              :fad, :rnk, :stat, :ech, :grd, :exd,
              :lid, :lis,
@@ -205,14 +204,13 @@ try {
         $gender      = in_array($row['gender'] ?? '', ['ذكر','أنثى'], true) ? $row['gender'] : '';
         $birthDate   = normalizeDate($row['birth_date']  ?? null);
         $birthPlace  = sanitizeStr($row['birth_place']  ?? '');
-        $residence   = sanitizeStr($row['residence']    ?? '');
+        $residence   = sanitizeStr($row['residence'] ?? $row['address'] ?? '');
         $maritalStatus = in_array($row['marital_status'] ?? '', ['أعزب','متزوج','أرمل','مطلق'], true)
                             ? $row['marital_status'] : '';
         $childrenCount = (isset($row['children_count']) && $row['children_count'] !== '')
                             ? (int)$row['children_count'] : null;
         $phone       = preg_replace('/[^\+0-9\-\s]/', '', trim((string)($row['phone'] ?? '')));
         $email       = strtolower(trim((string)($row['email'] ?? '')));
-        $address     = sanitizeStr($row['address']      ?? '');
         $district    = sanitizeStr($row['district']     ?? '11');
         $schoolYear  = sanitizeStr($row['school_year']  ?? '2025 / 2026');
         $schoolName  = sanitizeStr($row['school_name']  ?? '');
@@ -250,7 +248,6 @@ try {
         if (!$maritalStatus)            $rowErrors[] = 'الوضعية العائلية مطلوبة (أعزب/متزوج/أرمل/مطلق)';
         if (!preg_match('/^0[56][0-9]{8}$/', $phone)) $rowErrors[] = 'رقم الهاتف غير صالح';
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $rowErrors[] = 'البريد الإلكتروني غير صالح';
-        if (mb_strlen($address)    < 5) $rowErrors[] = 'العنوان مطلوب';
         if (mb_strlen($diploma)    < 2) $rowErrors[] = 'الشهادة مطلوبة';
         if (mb_strlen($schoolName) < 2) $rowErrors[] = 'اسم المؤسسة مطلوب';
 
@@ -278,7 +275,7 @@ try {
             ':bd'   => $birthDate,           ':bp'   => $birthPlace,   ':res'  => $residence,
             ':gen'  => $gender,              ':ms'   => $maritalStatus,':sn'   => null,
             ':cc'   => $childrenCount,       ':ph'   => $phone,        ':em'   => $email,
-            ':addr' => $address,             ':sed'  => $schoolEntry,  ':dip'  => $diploma,
+            ':sed'  => $schoolEntry,  ':dip'  => $diploma,
             ':fad'  => $firstAppDate  ?: null,
             ':rnk'  => $rank     ?: null,    ':stat' => $rstatus  ?: null,
             ':ech'  => $echelon  ?: null,    ':grd'  => $grade    ?: null,
@@ -300,5 +297,6 @@ try {
     ]);
 
 } catch (Throwable $e) {
-    authJsonResponse(false, 'خطأ داخلي في الخادم', 500);
+    authJsonResponse(false, 'خطأ داخلي في الخادم: ' . $e->getMessage()
+        . ' [' . basename($e->getFile()) . ':' . $e->getLine() . ']', 500);
 }

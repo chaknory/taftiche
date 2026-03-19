@@ -80,9 +80,11 @@ try {
     $pdo = db_connect();
     echo '<span class="ok">Connexion réussie !</span>' . "\n";
 
-    // Version du serveur
-    $version = $pdo->query('SELECT VERSION()')->fetchColumn();
-    echo 'Version MySQL : ' . $version . "\n";
+    // Version du serveur MySQL (test de requête simple)
+    if (DB_DRIVER === 'mysql') {
+        $version = $pdo->query('SELECT VERSION()')->fetchColumn();
+        echo 'Version MySQL : ' . $version . "\n";
+    }
 
 } catch (PDOException $e) {
     echo '<span class="err">ÉCHEC : ' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</span>' . "\n";

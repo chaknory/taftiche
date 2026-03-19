@@ -75,6 +75,9 @@ const Auth = (() => {
         // Uniquement sur la page contenant le formulaire
         if (!document.getElementById('personalInfoForm')) return;
 
+        // ── Chargement de la liste des écoles depuis la BDD ───────────────
+        await _loadSchools();
+
         try {
             const res  = await fetch('api/auth/prefill.php', { credentials: 'same-origin' });
             const json = await res.json();
@@ -122,7 +125,6 @@ const Auth = (() => {
             set('residence',       d.residence);
             set('phone',           d.phone);
             set('email',           d.email);
-            set('address',         d.address);
             set('schoolEntryDate',        d.school_entry_date);
             set('diploma',                d.diploma);
             set('firstAppointmentDate',   d.first_appointment_date);
@@ -136,8 +138,18 @@ const Auth = (() => {
 
             // ── 2. Select ─────────────────────────────────────────────────
             setSelect('schoolName',            d.school_name);
-            setSelect('job_rank',                  d.job_rank);
-            setSelect('status',                d.status);
+            setSelect('job_rank',              d.job_rank);
+            // status : affectation directe puis normalisation des anciennes valeurs libres
+            (function setStatus(val) {
+                if (!val) return;
+                const sel = document.getElementById('status');
+                if (!sel) return;
+                sel.value = val;          // fonctionne si la valeur correspond exactement à une option
+                if (!sel.value) {         // aucune option trouvée → valeur héritée (saisie libre)
+                    const legacy = { 'متربص': 'متربص(ة)', 'مرسم': 'مرسم(ة)', 'متعاقد': 'متعاقد(ة)' };
+                    sel.value = legacy[val] || '';
+                }
+            })(d.status);
             setSelect('grade',                 d.grade);
             setSelect('previousYearClass',     d.previous_year_class);
             setSelect('currentYearClass',      d.current_year_class);
@@ -192,6 +204,34 @@ const Auth = (() => {
 
         } catch (err) {
             console.warn('Prefill failed:', err);
+        }
+    }
+
+    /**
+     * Récupère la liste des écoles et peuple le <select id="schoolName">.
+     */
+    async function _loadSchools() {
+        const sel = document.getElementById('schoolName');
+        if (!sel) return;
+
+        try {
+            const res  = await fetch('api/schools.php', { credentials: 'same-origin' });
+            const json = await res.json();
+            if (!json.success || !json.schools) return;
+
+            // Conserver la première option vide
+            const placeholder = sel.options[0];
+            sel.innerHTML = '';
+            sel.appendChild(placeholder);
+
+            json.schools.forEach(school => {
+                const opt = document.createElement('option');
+                opt.value       = school.nom;
+                opt.textContent = school.nom;
+                sel.appendChild(opt);
+            });
+        } catch (err) {
+            console.warn('Chargement des écoles échoué :', err);
         }
     }
 
@@ -498,7 +538,7 @@ const Auth = (() => {
                     <td><span class="ap-badge ap-badge--${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'مفعّل' : 'معطّل'}</span></td>
                     <td>${escHtml(u.last_login || '—')}</td>
                     <td class="ap-actions">
-                        <button class="ap-btn ap-btn--edit" data-id="${u.id}" data-type="user">تعديل</button>
+                        <button class="ap-btn ap-btn--edit" data-id="${u.id}" data-type="user"></button>
                         <button class="ap-btn ap-btn--delete" data-id="${u.id}" data-type="user"
                             data-name="${escHtml(u.username)}">حذف</button>
                     </td>
@@ -821,10 +861,6 @@ const Auth = (() => {
                         <input type="text" id="apiPhone" value="${escHtml(r.phone)}">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="label-text">العنوان</label>
-                    <input type="text" id="apiAddress" value="${escHtml(r.address)}">
-                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label class="label-text">المقاطعة</label>
@@ -882,7 +918,6 @@ const Auth = (() => {
                 residence:        document.getElementById('apiResidence').value.trim(),
                 email:            document.getElementById('apiEmail').value.trim(),
                 phone:            document.getElementById('apiPhone').value.trim(),
-                address:          document.getElementById('apiAddress').value.trim(),
                 district:         document.getElementById('apiDistrict').value.trim(),
                 school_year:      document.getElementById('apiSchoolYear').value.trim(),
                 school_name:      document.getElementById('apiSchoolName').value.trim(),

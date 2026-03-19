@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Le pilote (sqlite / mysql) et les identifiants sont centralisés dans config.php.
 // Modifiez DB_DRIVER dans ce fichier pour basculer entre les deux environnements.
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../utils/job_rank.php';
 
 // ==========================================
 // Session — identify connected user
@@ -200,11 +201,6 @@ function validateData($data) {
         $errors['email'] = 'البريد الإلكتروني غير صالح';
     }
 
-    // العنوان
-    if (empty($data['address']) || mb_strlen(trim($data['address'])) < 5) {
-        $errors['address'] = 'العنوان مطلوب (5 أحرف على الأقل)';
-    }
-
     // تاريخ الدخول المدرسي
     if (empty($data['school_entry_date']) || !isValidDate($data['school_entry_date'])) {
         $errors['school_entry_date'] = 'تاريخ الدخول المدرسي غير صالح';
@@ -230,6 +226,12 @@ function validateData($data) {
     // معني بالحركة
     if (empty($data['haraka']) || !in_array($data['haraka'], ['نعم', 'لا'])) {
         $errors['haraka'] = 'يرجى تحديد ما إذا كنت معنيًا بالحركة';
+    }
+
+    // الرتبة (اختياري — لكن إذا وُجدت يجب أن تكون من القيم المعتمدة)
+    $validRanks = array_map(fn(JobRank $r) => $r->value, JobRank::all());
+    if (!empty($data['job_rank']) && !in_array($data['job_rank'], $validRanks, true)) {
+        $errors['job_rank'] = 'الرتبة المختارة غير صالحة';
     }
 
     return $errors;
@@ -261,7 +263,6 @@ function sanitizeData($data) {
         'gender'            => $data['gender'],
         'phone'             => preg_replace('/[^\+0-9\-\s]/', '', trim($data['phone'])),
         'email'             => filter_var(trim($data['email']), FILTER_SANITIZE_EMAIL),
-        'address'           => htmlspecialchars(trim($data['address']), ENT_QUOTES, 'UTF-8'),
         'school_entry_date'       => $data['school_entry_date'],
         'diploma'                 => htmlspecialchars(trim($data['diploma']), ENT_QUOTES, 'UTF-8'),
         'first_appointment_date'  => $data['first_appointment_date'] ?? '',
@@ -278,6 +279,7 @@ function sanitizeData($data) {
         'current_year_class'      => htmlspecialchars(trim($data['current_year_class']), ENT_QUOTES, 'UTF-8'),
         'student_count'           => (int)$data['student_count'],
         'haraka'                  => $data['haraka'],
+        'class_note'              => htmlspecialchars(trim($data['class_note'] ?? ''), ENT_QUOTES, 'UTF-8'),
         'children_count'          => isset($data['children_count']) && $data['children_count'] !== '' ? (int)$data['children_count'] : null,
         'tech_institute_grad_year' => htmlspecialchars(trim($data['tech_institute_grad_year'] ?? ''), ENT_QUOTES, 'UTF-8'),
         'university_grad_year'    => htmlspecialchars(trim($data['university_grad_year'] ?? ''), ENT_QUOTES, 'UTF-8')
@@ -307,24 +309,24 @@ function saveToDatabase($data) {
             (district, school_year, school_name, years_worked,
              first_name, family_name, maiden_name, birth_date, birth_place,
              residence, marital_status, spouse_name, gender, phone, email,
-             address, school_entry_date, diploma,
+             school_entry_date, diploma,
              first_appointment_date, job_rank, status, echelon, grade, execution_date,
              latest_inspection_date, latest_inspection_score,
              last_inspection_date, last_inspection_score,
              previous_year_class, current_year_class,
-             student_count, haraka, children_count,
+             student_count, haraka, class_note, children_count,
              tech_institute_grad_year, university_grad_year,
              created_at)
             VALUES
             (:district, :school_year, :school_name, :years_worked,
              :first_name, :family_name, :maiden_name, :birth_date, :birth_place,
              :residence, :marital_status, :spouse_name, :gender, :phone, :email,
-             :address, :school_entry_date, :diploma,
+             :school_entry_date, :diploma,
              :first_appointment_date, :job_rank, :status, :echelon, :grade, :execution_date,
              :latest_inspection_date, :latest_inspection_score,
              :last_inspection_date, :last_inspection_score,
              :previous_year_class, :current_year_class,
-             :student_count, :haraka, :children_count,
+             :student_count, :haraka, :class_note, :children_count,
              :tech_institute_grad_year, :university_grad_year,
              " . db_now() . ")"
     ;
@@ -346,7 +348,6 @@ function saveToDatabase($data) {
         ':gender'                   => $data['gender'],
         ':phone'                    => $data['phone'],
         ':email'                    => $data['email'],
-        ':address'                  => $data['address'],
         ':school_entry_date'        => $data['school_entry_date'],
         ':diploma'                  => $data['diploma'],
         ':first_appointment_date'   => $data['first_appointment_date'] ?: null,
@@ -363,6 +364,7 @@ function saveToDatabase($data) {
         ':current_year_class'       => $data['current_year_class'],
         ':student_count'            => $data['student_count'],
         ':haraka'                   => $data['haraka'],
+        ':class_note'               => $data['class_note'] ?: null,
         ':children_count'           => $data['children_count'],
         ':tech_institute_grad_year' => $data['tech_institute_grad_year'] ?: null,
         ':university_grad_year'     => $data['university_grad_year'] ?: null,
@@ -389,7 +391,6 @@ function updateInDatabase($data, $email) {
             spouse_name = :spouse_name,
             gender = :gender,
             phone = :phone,
-            address = :address,
             school_entry_date = :school_entry_date,
             diploma = :diploma,
             first_appointment_date = :first_appointment_date,
@@ -406,6 +407,7 @@ function updateInDatabase($data, $email) {
             current_year_class = :current_year_class,
             student_count = :student_count,
             haraka = :haraka,
+            class_note = :class_note,
             children_count = :children_count,
             tech_institute_grad_year = :tech_institute_grad_year,
             university_grad_year = :university_grad_year,
@@ -429,7 +431,6 @@ function updateInDatabase($data, $email) {
         ':birth_date'              => $data['birth_date'],
         ':gender'                  => $data['gender'],
         ':phone'                   => $data['phone'],
-        ':address'                 => $data['address'],
         ':school_entry_date'       => $data['school_entry_date'],
         ':diploma'                 => $data['diploma'],
         ':first_appointment_date'  => $data['first_appointment_date'] ?: null,
@@ -446,6 +447,7 @@ function updateInDatabase($data, $email) {
         ':current_year_class'      => $data['current_year_class'],
         ':student_count'           => $data['student_count'],
         ':haraka'                  => $data['haraka'],
+        ':class_note'              => $data['class_note'] ?: null,
         ':children_count'          => $data['children_count'],
         ':tech_institute_grad_year' => $data['tech_institute_grad_year'] ?: null,
         ':university_grad_year'    => $data['university_grad_year'] ?: null,
